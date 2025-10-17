@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EDF Power Solutions - Falling Object Impact Simulator</title>
+    <title>Falling Object Impact Simulator</title>
     <style>
         * {
             margin: 0;
@@ -11,14 +11,21 @@
             box-sizing: border-box;
         }
         
+        html {
+            overflow-x: hidden;
+        }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #00A8E9 0%, #000E47 100%);
             min-height: 100vh;
+            padding: 20px;
             overflow-x: hidden;
+            width: 100%;
+            max-width: 100vw;
         }
 
-        /* Navigation fixe en haut */
+        /* Navigation mobile - cachée sur desktop */
         .mobile-nav {
             position: fixed;
             top: 0;
@@ -28,6 +35,21 @@
             padding: 10px;
             z-index: 1000;
             box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            display: none;
+        }
+
+        .header-logos-mobile {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px 10px;
+            margin-bottom: 5px;
+        }
+
+        .header-logo-mobile {
+            max-height: 35px;
+            max-width: 90px;
+            object-fit: contain;
         }
 
         .nav-title {
@@ -71,60 +93,80 @@
             border-color: white;
         }
 
-        .nav-btn:active {
-            transform: scale(0.95);
-        }
-
-        /* Container principal */
         .container {
-            margin-top: 120px;
-            padding: 10px;
-            padding-bottom: 20px;
-        }
-
-        /* Sections */
-        .section {
+            max-width: 1400px;
+            margin: 0 auto;
             background: white;
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 15px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
-            display: none;
-            animation: fadeIn 0.3s ease;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            width: 100%;
         }
 
-        .section.active {
-            display: block;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .section-title {
-            color: #00A8E9;
-            font-size: 1.5em;
-            margin-bottom: 20px;
+        .header {
+            background: linear-gradient(135deg, #00A8E9 0%, #000E47 100%);
+            color: white;
+            padding: 30px;
             text-align: center;
+            position: relative;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            gap: 30px;
         }
 
-        /* Contrôles */
+        .header-logo {
+            max-height: 80px;
+            max-width: 200px;
+            object-fit: contain;
+        }
+
+        .header-content {
+            flex: 1;
+            max-width: 600px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.95;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 30px;
+            padding: 30px;
+            max-width: 100%;
+        }
+
+        .top-section {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 30px;
+            max-width: 100%;
+        }
+
+        .left-column {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
         .control-group {
             background: #f8f9fa;
-            padding: 15px;
-            border-radius: 12px;
-            margin-bottom: 15px;
+            padding: 20px;
+            border-radius: 15px;
             border: 2px solid #e9ecef;
         }
 
@@ -147,39 +189,139 @@
 
         .control-group input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
+            appearance: none;
             width: 24px;
             height: 24px;
             border-radius: 50%;
             background: #00A8E9;
             cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .control-group input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            background: #000E47;
         }
 
         .weight-inputs {
             display: flex;
             gap: 10px;
+            align-items: center;
             margin-top: 10px;
         }
 
         .weight-input-field {
             flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
         }
 
         .weight-input-field label {
-            font-size: 0.8em;
+            font-size: 0.85em;
             color: #6c757d;
             font-weight: normal;
-            margin-bottom: 5px;
         }
 
         .weight-input-field input[type="number"] {
-            width: 100%;
-            padding: 10px;
+            padding: 8px;
             border: 2px solid #dee2e6;
             border-radius: 8px;
             font-size: 1em;
             font-weight: bold;
             color: #00A8E9;
             text-align: center;
+        }
+
+        .weight-input-field input[type="number"]:focus {
+            outline: none;
+            border-color: #00A8E9;
+        }
+
+        .presets-section {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 15px;
+            border: 2px solid #e9ecef;
+        }
+
+        .presets-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .presets-header h3 {
+            font-size: 1em;
+            color: #495057;
+            margin: 0;
+        }
+
+        .collapse-icon {
+            font-size: 1.2em;
+            transition: transform 0.3s;
+            color: #00A8E9;
+        }
+
+        .collapse-icon.collapsed {
+            transform: rotate(-90deg);
+        }
+
+        .presets-content {
+            max-height: 400px;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            margin-top: 15px;
+        }
+
+        .presets-content.collapsed {
+            max-height: 0;
+            margin-top: 0;
+        }
+
+        .presets-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .preset-btn {
+            background: white;
+            border: 2px solid #dee2e6;
+            padding: 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .preset-btn:hover {
+            border-color: #00A8E9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .preset-btn.active {
+            border-color: #00A8E9;
+            background: #e6f7ff;
+        }
+
+        .preset-icon {
+            font-size: 1.8em;
+            margin-bottom: 5px;
+        }
+
+        .preset-name {
+            font-weight: bold;
+            font-size: 0.9em;
+            color: #495057;
+        }
+
+        .preset-weight {
+            font-size: 0.8em;
+            color: #6c757d;
         }
 
         .value-display {
@@ -190,57 +332,35 @@
             margin-top: 10px;
         }
 
-        /* Presets */
-        .presets-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 6px;
-            margin-top: 10px;
-        }
-
-        .preset-btn {
-            background: white;
-            border: 2px solid #dee2e6;
-            padding: 8px 4px;
-            border-radius: 10px;
+        .btn-simulate {
+            background: linear-gradient(135deg, #00A8E9 0%, #000E47 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2em;
+            font-weight: bold;
+            border-radius: 50px;
             cursor: pointer;
             transition: all 0.3s;
-            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         }
 
-        .preset-btn.active {
-            border-color: #00A8E9;
-            background: #e6f7ff;
-            transform: scale(1.05);
+        .btn-simulate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
         }
 
-        .preset-icon {
-            font-size: 1.8em;
-            margin-bottom: 2px;
+        .btn-simulate:active {
+            transform: translateY(0);
         }
 
-        .preset-name {
-            font-weight: bold;
-            font-size: 0.65em;
-            color: #495057;
-            line-height: 1.1;
-        }
-
-        .preset-weight {
-            font-size: 0.6em;
-            color: #6c757d;
-            margin-top: 2px;
-        }
-
-        /* Visualisation */
         .visualization {
             position: relative;
             background: linear-gradient(180deg, #e3f2fd 0%, #ffffff 100%);
-            border-radius: 12px;
+            border-radius: 15px;
             border: 3px solid #e9ecef;
-            height: 400px;
+            height: 500px;
             overflow: hidden;
-            margin-bottom: 15px;
         }
 
         .height-scale {
@@ -255,7 +375,7 @@
         .scale-mark {
             position: absolute;
             right: 5px;
-            font-size: 0.75em;
+            font-size: 0.8em;
             color: #6c757d;
         }
 
@@ -270,7 +390,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 2.5em;
+            font-size: 2em;
             box-shadow: 0 5px 15px rgba(0,0,0,0.3);
             transition: top 0.05s linear;
         }
@@ -290,40 +410,22 @@
             bottom: 80px;
             left: 50%;
             transform: translateX(-50%);
-            font-size: 3.5em;
+            font-size: 3em;
             z-index: 10;
         }
 
         .impact-effect {
             position: absolute;
-            bottom: 160px;
+            bottom: 140px;
             left: 50%;
             transform: translateX(-50%);
-            font-size: 3.5em;
+            font-size: 3em;
             opacity: 0;
             transition: opacity 0.3s;
         }
 
         .impact-effect.show {
             opacity: 1;
-        }
-
-        .btn-simulate {
-            width: 100%;
-            background: linear-gradient(135deg, #00A8E9 0%, #000E47 100%);
-            color: white;
-            border: none;
-            padding: 18px;
-            font-size: 1.2em;
-            font-weight: bold;
-            border-radius: 50px;
-            cursor: pointer;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-            margin-bottom: 15px;
-        }
-
-        .btn-simulate:active {
-            transform: scale(0.98);
         }
 
         .warning {
@@ -337,9 +439,34 @@
             font-size: 0.9em;
         }
 
-        /* Timeline */
+        .right-column {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        .equivalence-timeline-section {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+
+        .equivalence-timeline-section h2 {
+            color: #495057;
+            margin-bottom: 25px;
+            text-align: center;
+            font-size: 1.8em;
+        }
+
+        .timeline-container {
+            position: relative;
+            margin-bottom: 40px;
+        }
+
         .timeline-track {
             display: flex;
+            align-items: flex-start;
             gap: 5px;
             background: linear-gradient(90deg, 
                 #28a745 0%, 
@@ -351,10 +478,12 @@
                 #dc3545 60%, 
                 #dc3545 100%);
             padding: 15px;
-            border-radius: 12px;
+            border-radius: 15px;
             overflow-x: auto;
+            overflow-y: hidden;
+            position: relative;
+            min-height: 120px;
             -webkit-overflow-scrolling: touch;
-            margin-bottom: 20px;
         }
 
         .timeline-item {
@@ -362,23 +491,29 @@
             text-align: center;
             padding: 10px;
             transition: all 0.3s;
+            cursor: pointer;
             border-radius: 10px;
-            min-width: 80px;
+        }
+
+        .timeline-item:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
         }
 
         .timeline-item.active {
             background: rgba(255, 255, 255, 0.5);
-            transform: scale(1.1);
+            transform: scale(1.15);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
         }
 
         .timeline-emoji {
-            font-size: 2.5em;
+            font-size: 3em;
             margin-bottom: 5px;
             display: block;
         }
 
         .timeline-energy {
-            font-size: 0.7em;
+            font-size: 0.75em;
             font-weight: bold;
             color: #fff;
             background: rgba(0,0,0,0.4);
@@ -387,49 +522,99 @@
             white-space: nowrap;
         }
 
-        .equivalence-display {
-            background: linear-gradient(135deg, #00A8E9 0%, #000E47 100%);
-            padding: 20px;
-            border-radius: 12px;
-            color: white;
+        .current-marker {
+            position: absolute;
+            bottom: -35px;
+            left: 0;
+            transition: left 0.3s ease;
             text-align: center;
+            z-index: 10;
         }
 
-        .equivalence-icon {
-            font-size: 4em;
-            margin-bottom: 15px;
+        .marker-arrow {
+            font-size: 2em;
+            color: #00A8E9;
+            animation: bounce 1s infinite;
         }
 
-        .equivalence-text {
-            font-size: 1.2em;
+        .marker-label {
+            font-size: 0.75em;
             font-weight: bold;
+            color: #00A8E9;
+            white-space: nowrap;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        .current-equivalence {
+            background: linear-gradient(135deg, #00A8E9 0%, #000E47 100%);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+
+        .equivalence-display-large {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            min-height: 100px;
+        }
+
+        .equivalence-icon-large {
+            font-size: 5em;
+            flex-shrink: 0;
+        }
+
+        .equivalence-text-large {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #495057;
             line-height: 1.4;
         }
 
-        /* Résultats */
+        .results {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+        }
+
+        .results h2 {
+            color: #495057;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
         .energy-display {
             text-align: center;
-            font-size: 2em;
+            font-size: 1.8em;
             font-weight: bold;
             color: #00A8E9;
             margin-bottom: 20px;
-            padding: 20px;
-            background: #f8f9fa;
-            border-radius: 12px;
+        }
+
+        .damage-levels {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
         }
 
         .damage-card {
-            background: #f8f9fa;
+            background: white;
             padding: 20px;
             border-radius: 12px;
             text-align: center;
             border: 3px solid transparent;
-            margin-bottom: 15px;
             transition: all 0.3s;
         }
 
         .damage-card.active {
-            transform: scale(1.02);
+            transform: scale(1.05);
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
 
@@ -446,31 +631,28 @@
         .damage-card.fatality.active { background: #f8d7da; }
 
         .damage-icon {
-            font-size: 3.5em;
+            font-size: 3em;
             margin-bottom: 10px;
         }
 
         .damage-title {
             font-weight: bold;
-            font-size: 1.3em;
+            font-size: 1.2em;
             margin-bottom: 10px;
-            color: #495057;
         }
 
         .damage-description {
-            font-size: 1em;
+            font-size: 0.9em;
             color: #6c757d;
             line-height: 1.6;
-            margin-bottom: 8px;
         }
 
         .energy-threshold {
-            font-size: 0.9em;
+            font-size: 0.8em;
             color: #868e96;
-            font-weight: bold;
+            margin-top: 8px;
         }
 
-        /* Animation de chute */
         .animate-fall {
             animation: fall linear;
         }
@@ -480,178 +662,370 @@
             to { top: calc(100% - 140px); }
         }
 
-        /* Logos header */
-        .header-logos {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 5px 10px;
-            margin-bottom: 5px;
+        /* Responsive - Tablette */
+        @media (max-width: 1200px) {
+            .top-section {
+                grid-template-columns: 1fr;
+            }
+            .damage-levels {
+                grid-template-columns: 1fr 1fr;
+            }
         }
 
-        .header-logo {
-            max-height: 35px;
-            max-width: 90px;
-            object-fit: contain;
-        }
+        /* Responsive - Mobile */
+        @media (max-width: 768px) {
+            /* Afficher la navigation mobile */
+            .mobile-nav {
+                display: block;
+            }
 
-        /* Collapsible presets */
-        .presets-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            user-select: none;
-            margin-bottom: 10px;
-        }
+            /* Cacher le header desktop */
+            .header {
+                display: none;
+            }
 
-        .presets-header h4 {
-            font-size: 0.9em;
-            color: #495057;
-            margin: 0;
-        }
+            body {
+                padding: 0;
+                padding-top: 120px;
+            }
 
-        .collapse-icon {
-            font-size: 1em;
-            transition: transform 0.3s;
-            color: #00A8E9;
-        }
+            .container {
+                border-radius: 0;
+                box-shadow: none;
+            }
 
-        .collapse-icon.collapsed {
-            transform: rotate(-90deg);
-        }
+            .main-grid {
+                padding: 10px;
+                gap: 15px;
+            }
 
-        .presets-content {
-            max-height: 500px;
-            overflow: hidden;
-            transition: max-height 0.3s ease;
-        }
+            /* Système de sections */
+            .section-mobile {
+                display: none;
+                animation: fadeIn 0.3s ease;
+            }
 
-        .presets-content.collapsed {
-            max-height: 0;
+            .section-mobile.active {
+                display: block;
+            }
+
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(20px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            .top-section {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .control-group {
+                padding: 15px;
+                margin-bottom: 15px;
+            }
+
+            .control-group label {
+                font-size: 1em;
+            }
+
+            .value-display {
+                font-size: 1.5em;
+            }
+
+            .presets-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 6px;
+            }
+
+            .preset-btn {
+                padding: 8px 4px;
+            }
+
+            .preset-icon {
+                font-size: 1.5em;
+                margin-bottom: 2px;
+            }
+
+            .preset-name {
+                font-size: 0.65em;
+                line-height: 1.1;
+            }
+
+            .preset-weight {
+                font-size: 0.6em;
+                margin-top: 2px;
+            }
+
+            .visualization {
+                height: 400px;
+                margin-bottom: 15px;
+            }
+
+            .btn-simulate {
+                width: 100%;
+                padding: 15px;
+                font-size: 1.1em;
+                margin-bottom: 15px;
+            }
+
+            .warning {
+                font-size: 0.85em;
+                padding: 12px;
+            }
+
+            .equivalence-timeline-section {
+                padding: 15px;
+                margin-bottom: 15px;
+            }
+
+            .equivalence-timeline-section h2 {
+                font-size: 1.3em;
+                margin-bottom: 15px;
+            }
+
+            .timeline-track {
+                padding: 10px;
+                min-height: 90px;
+            }
+
+            .timeline-item {
+                padding: 5px;
+                min-width: 70px;
+            }
+
+            .timeline-emoji {
+                font-size: 2em;
+            }
+
+            .timeline-energy {
+                font-size: 0.65em;
+            }
+
+            .current-equivalence {
+                padding: 15px;
+            }
+
+            .equivalence-display-large {
+                flex-direction: column;
+                text-align: center;
+                padding: 20px;
+                gap: 15px;
+            }
+
+            .equivalence-icon-large {
+                font-size: 3.5em;
+            }
+
+            .equivalence-text-large {
+                font-size: 1.1em;
+            }
+
+            .results {
+                padding: 15px;
+            }
+
+            .results h2 {
+                font-size: 1.3em;
+            }
+
+            .energy-display {
+                font-size: 1.5em;
+                padding: 15px;
+                margin-bottom: 15px;
+            }
+
+            .damage-levels {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+
+            .damage-card {
+                padding: 15px;
+            }
+
+            .damage-icon {
+                font-size: 2.5em;
+            }
+
+            .damage-title {
+                font-size: 1.1em;
+            }
+
+            .damage-description {
+                font-size: 0.85em;
+            }
+
+            .energy-threshold {
+                font-size: 0.75em;
+            }
+
+            .falling-object {
+                width: 50px;
+                height: 50px;
+                font-size: 1.8em;
+            }
+
+            .person {
+                font-size: 2.5em;
+            }
+
+            .impact-effect {
+                font-size: 2.5em;
+                bottom: 130px;
+            }
         }
     </style>
 </head>
 <body>
-    <!-- Navigation mobile -->
+    <!-- Navigation mobile (visible uniquement sur mobile) -->
     <div class="mobile-nav">
-        <div class="header-logos">
-            <img src="./logo_cou.png" alt="Logo COU" class="header-logo" onerror="this.style.display='none'">
-            <img src="./logo_drop.png" alt="Logo Drop" class="header-logo" onerror="this.style.display='none'">
+        <div class="header-logos-mobile">
+            <img src="./logo_cou.png" alt="Logo COU" class="header-logo-mobile" onerror="this.style.display='none'">
+            <img src="./logo_drop.png" alt="Logo Drop" class="header-logo-mobile" onerror="this.style.display='none'">
         </div>
         <div class="nav-title">⚠️ Falling Object Simulator</div>
         <div class="nav-buttons">
-            <button class="nav-btn active" onclick="showSection('controls')">⚙️ Controls & Sim</button>
-            <button class="nav-btn" onclick="showSection('impact')">🔥 Impact Force</button>
+            <button class="nav-btn active" onclick="showSection('controls')">⚙️ Controls</button>
+            <button class="nav-btn" onclick="showSection('impact')">🔥 Impact</button>
             <button class="nav-btn" onclick="showSection('results')">📊 Results</button>
         </div>
     </div>
 
     <div class="container">
-        <!-- Section 1: Controls & Simulation -->
-        <div id="controls" class="section active">
-            <h2 class="section-title">⚙️ Controls & Simulation</h2>
-            
-            <div class="control-group">
-                <label>💪 Object Weight</label>
-                <input type="range" id="weight" min="0.01" max="20" step="0.01" value="1">
-                <div class="weight-inputs">
-                    <div class="weight-input-field">
-                        <label>Kilograms</label>
-                        <input type="number" id="weightKg" min="0.01" max="20" step="0.01" value="1.0">
-                    </div>
-                    <div class="weight-input-field">
-                        <label>Grams</label>
-                        <input type="number" id="weightGrams" min="10" max="20000" step="1" value="1000">
-                    </div>
-                </div>
+        <!-- Header desktop (caché sur mobile) -->
+        <div class="header">
+            <img src="./logo_cou.png" alt="Logo" class="header-logo" onerror="this.style.display='none'">
+            <div class="header-content">
+                <h1>⚠️ Falling Object Impact Simulator</h1>
+                <p>Understand the dangers of objects at height</p>
             </div>
-
-            <div class="control-group">
-                <div class="presets-header" onclick="togglePresets()">
-                    <h4>🔧 Common Objects</h4>
-                    <span class="collapse-icon collapsed" id="collapseIcon">▼</span>
-                </div>
-                <div class="presets-content collapsed" id="presetsContent">
-                    <div class="presets-grid" id="presetsGrid"></div>
-                </div>
-            </div>
-
-            <div class="control-group">
-                <label>📏 Drop Height</label>
-                <input type="range" id="height" min="0.5" max="15" step="0.5" value="10">
-                <div class="value-display" id="heightValue">10.0 m</div>
-            </div>
-
-            <div class="visualization" id="visualization">
-                <div class="height-scale" id="heightScale"></div>
-                <div class="falling-object" id="fallingObject">⚫</div>
-                <div class="person" id="person">🧍</div>
-                <div class="impact-effect" id="impactEffect">💥</div>
-                <div class="ground"></div>
-            </div>
-
-            <button class="btn-simulate" onclick="simulateFall()">
-                🚀 Run Simulation
-            </button>
-
-            <div class="warning">
-                ⚠️ Even small objects can cause serious injuries!
-            </div>
+            <img src="./logo_drop.png" alt="Logo" class="header-logo" onerror="this.style.display='none'">
         </div>
 
-        <!-- Section 2: Impact Force -->
-        <div id="impact" class="section">
-            <h2 class="section-title">🔥 Impact Force Scale</h2>
-            
-            <div class="timeline-track" id="timelineTrack"></div>
-            
-            <div class="equivalence-display" id="equivalenceDisplay">
-                <div class="equivalence-icon">🤔</div>
-                <div class="equivalence-text">Adjust parameters to see equivalent force</div>
-            </div>
-        </div>
+        <div class="main-grid">
+            <!-- Section Controls & Simulation (mobile: section 1) -->
+            <div class="top-section section-mobile active" id="controls">
+                <div class="left-column">
+                    <div class="controls">
+                        <div class="control-group">
+                            <label>💪 Object Weight</label>
+                            <input type="range" id="weight" min="0.01" max="20" step="0.01" value="1">
+                            <div class="weight-inputs">
+                                <div class="weight-input-field">
+                                    <label>Kilograms</label>
+                                    <input type="number" id="weightKg" min="0.01" max="20" step="0.01" value="1.0">
+                                </div>
+                                <div class="weight-input-field">
+                                    <label>Grams</label>
+                                    <input type="number" id="weightGrams" min="10" max="20000" step="1" value="1000">
+                                </div>
+                            </div>
+                        </div>
 
-        <!-- Section 3: Results -->
-        <div id="results" class="section">
-            <h2 class="section-title">📊 Impact Analysis</h2>
-            
-            <div class="energy-display" id="energyDisplay">
-                Energy: 0 J
+                        <div class="presets-section">
+                            <div class="presets-header" onclick="togglePresets()">
+                                <h3>🔧 Common Objects</h3>
+                                <span class="collapse-icon collapsed" id="collapseIcon">▼</span>
+                            </div>
+                            <div class="presets-content collapsed" id="presetsContent">
+                                <div class="presets-grid" id="presetsGrid"></div>
+                            </div>
+                        </div>
+
+                        <div class="control-group">
+                            <label>📏 Drop Height (m)</label>
+                            <input type="range" id="height" min="0.5" max="15" step="0.5" value="10">
+                            <div class="value-display" id="heightValue">10.0 m</div>
+                        </div>
+
+                        <button class="btn-simulate" onclick="simulateFall()">
+                            🚀 Run Simulation
+                        </button>
+
+                        <div class="warning">
+                            ⚠️ Even small objects can cause serious injuries!
+                        </div>
+                    </div>
+                </div>
+
+                <div class="right-column">
+                    <div class="visualization" id="visualization">
+                        <div class="height-scale" id="heightScale"></div>
+                        <div class="falling-object" id="fallingObject">⚫</div>
+                        <div class="person" id="person">🧍</div>
+                        <div class="impact-effect" id="impactEffect">💥</div>
+                        <div class="ground"></div>
+                    </div>
+                </div>
             </div>
 
-            <div class="damage-card slight" id="slight">
-                <div class="damage-icon">🩹</div>
-                <div class="damage-title">SLIGHT</div>
-                <div class="damage-description">📋 Clipboard<br>🍎 Apple<br>🔧 Wrench</div>
-                <div class="energy-threshold">&lt; 15 J</div>
+            <!-- Section Impact Force (mobile: section 2) -->
+            <div class="equivalence-timeline-section section-mobile" id="impact">
+                <h2>🔥 Impact Force Scale</h2>
+                <div class="timeline-container">
+                    <div class="timeline-track" id="timelineTrack">
+                        <!-- Timeline items will be generated here -->
+                    </div>
+                    <div class="current-marker" id="currentMarker">
+                        <div class="marker-arrow">▼</div>
+                        <div class="marker-label">YOU ARE HERE</div>
+                    </div>
+                </div>
+                <div class="current-equivalence">
+                    <div class="equivalence-display-large" id="equivalenceDisplayLarge">
+                        <div class="equivalence-icon-large">🤔</div>
+                        <div class="equivalence-text-large">Adjust parameters to see equivalent force</div>
+                    </div>
+                </div>
             </div>
 
-            <div class="damage-card minor" id="minor">
-                <div class="damage-icon">🥼</div>
-                <div class="damage-title">MINOR</div>
-                <div class="damage-description">🔨 Hammer<br>🧱 Brick<br>👷 Hard Hat</div>
-                <div class="energy-threshold">15-50 J</div>
-            </div>
+            <!-- Section Results (mobile: section 3) -->
+            <div class="results section-mobile" id="results">
+                <h2>📊 Impact Analysis</h2>
+                <div class="energy-display" id="energyDisplay">
+                    Energy: 0 J
+                </div>
 
-            <div class="damage-card major" id="major">
-                <div class="damage-icon">👨‍🦽</div>
-                <div class="damage-title">MAJOR</div>
-                <div class="damage-description">🪓 Axe<br>⚙️ Engine Part<br>🪨 Large Rock</div>
-                <div class="energy-threshold">50-150 J</div>
-            </div>
+                <div class="damage-levels">
+                    <div class="damage-card slight" id="slight">
+                        <div class="damage-icon">🩹</div>
+                        <div class="damage-title">SLIGHT</div>
+                        <div class="damage-description">📋 Clipboard<br>🍎 Apple<br>🔧 Wrench</div>
+                        <div class="energy-threshold">&lt; 15 J</div>
+                    </div>
 
-            <div class="damage-card fatality" id="fatality">
-                <div class="damage-icon">⚰️</div>
-                <div class="damage-title">FATALITY</div>
-                <div class="damage-description">🗜️ Steel Beam<br>⚓ Anchor<br>🪨 Boulder</div>
-                <div class="energy-threshold">&gt; 150 J</div>
+                    <div class="damage-card minor" id="minor">
+                        <div class="damage-icon">🥼</div>
+                        <div class="damage-title">MINOR</div>
+                        <div class="damage-description">🔨 Hammer<br>🧱 Brick<br>👷 Hard Hat</div>
+                        <div class="energy-threshold">15-50 J</div>
+                    </div>
+
+                    <div class="damage-card major" id="major">
+                        <div class="damage-icon">👨‍🦽</div>
+                        <div class="damage-title">MAJOR</div>
+                        <div class="damage-description">🪓 Axe<br>⚙️ Engine Part<br>🪨 Large Rock</div>
+                        <div class="energy-threshold">50-150 J</div>
+                    </div>
+
+                    <div class="damage-card fatality" id="fatality">
+                        <div class="damage-icon">⚰️</div>
+                        <div class="damage-title">FATALITY</div>
+                        <div class="damage-description">🗜️ Steel Beam<br>⚓ Anchor<br>🪨 Boulder</div>
+                        <div class="energy-threshold">&gt; 150 J</div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        // Variables globales
         const weightInput = document.getElementById('weight');
         const weightKgInput = document.getElementById('weightKg');
         const weightGramsInput = document.getElementById('weightGrams');
@@ -666,14 +1040,17 @@
         let currentWeight = 1;
         let currentHeight = 10;
         let isUpdating = false;
+        let isMobile = window.innerWidth <= 768;
+
+        // Gravity constant
         const g = 9.81;
 
-        // Object presets
+        // Object presets (weight in kg)
         const PRESETS = [
             { name: '12mm Wrench', icon: '🔧', weight: 0.15, emoji: '🔧' },
-            { name: 'M10 Bolt', icon: '🔩', weight: 0.05, emoji: '🔩' },
+            { name: 'Bolt M10', icon: '🔩', weight: 0.05, emoji: '🔩' },
             { name: 'iPhone', icon: '📱', weight: 0.2, emoji: '📱' },
-            { name: 'Hard Hat', icon: '👷', weight: 0.4, emoji: '⛑️' },
+            { name: 'Safety Helmet', icon: '👷', weight: 0.4, emoji: '⛑️' },
             { name: 'Work Boot', icon: '👢', weight: 1.2, emoji: '🥾' },
             { name: 'Hammer', icon: '🔨', weight: 0.5, emoji: '🔨' },
             { name: 'Screwdriver', icon: '🪛', weight: 0.2, emoji: '🪛' },
@@ -684,37 +1061,41 @@
             { name: 'Adjustable Wrench', icon: '🔧', weight: 0.35, emoji: '🔧' },
             { name: 'Paint Can', icon: '🎨', weight: 5.0, emoji: '🪣' },
             { name: 'Steel Pipe', icon: '⚙️', weight: 4.0, emoji: '🛠️' },
-            { name: 'Clipboard', icon: '📋', weight: 0.3, emoji: '📋' }
+            { name: 'Clipboard', icon: '📋', weight: 0.3, emoji: '📋' },
+            { name: 'Tape Measure', icon: '📏', weight: 0.25, emoji: '📏' }
         ];
 
-        // Equivalences
-        const EQUIVALENCES = [
-            { maxEnergy: 5, icon: '🤝', text: 'A friendly tap' },
-            { maxEnergy: 10, icon: '👋', text: 'A pat on the shoulder' },
-            { maxEnergy: 15, icon: '🥊', text: 'A light punch' },
-            { maxEnergy: 30, icon: '⚾', text: 'A baseball thrown' },
-            { maxEnergy: 50, icon: '🏏', text: 'A cricket bat swing' },
-            { maxEnergy: 80, icon: '⚽', text: 'A pro soccer kick' },
-            { maxEnergy: 120, icon: '🥋', text: 'A karate chop' },
-            { maxEnergy: 150, icon: '🏈', text: 'A rugby tackle' },
-            { maxEnergy: 250, icon: '🐘', text: 'An elephant stepping on you' },
-            { maxEnergy: 400, icon: '🥊', text: 'A Mike Tyson uppercut' },
-            { maxEnergy: 600, icon: '🏍️', text: 'Motorcycle crash 30 km/h' },
-            { maxEnergy: 900, icon: '🚗', text: 'Low-speed car impact' },
-            { maxEnergy: 1500, icon: '💥', text: 'Car crash at 50 km/h' },
-            { maxEnergy: Infinity, icon: '☠️', text: 'Potentially lethal force' }
-        ];
-
+        // Energy thresholds (in Joules)
         const THRESHOLDS = {
             slight: 15,
             minor: 50,
             major: 150
         };
 
-        // Navigation entre sections
+        // Relatable equivalences
+        const EQUIVALENCES = [
+            { maxEnergy: 5, icon: '🤝', text: 'A friendly tap' },
+            { maxEnergy: 10, icon: '👋', text: 'A pat on the shoulder' },
+            { maxEnergy: 15, icon: '🥊', text: 'A light punch (amateur boxing)' },
+            { maxEnergy: 30, icon: '⚾', text: 'A baseball thrown at 50 km/h' },
+            { maxEnergy: 50, icon: '🏏', text: 'A cricket bat swing' },
+            { maxEnergy: 80, icon: '⚽', text: 'A professional soccer kick' },
+            { maxEnergy: 120, icon: '🥋', text: 'A black belt karate chop' },
+            { maxEnergy: 150, icon: '🏈', text: 'A rugby tackle' },
+            { maxEnergy: 250, icon: '🐘', text: 'An elephant stepping on you' },
+            { maxEnergy: 400, icon: '🥊', text: 'A Mike Tyson uppercut' },
+            { maxEnergy: 600, icon: '🏍️', text: 'A motorcycle crash at 30 km/h' },
+            { maxEnergy: 900, icon: '🚗', text: 'A low-speed car impact' },
+            { maxEnergy: 1500, icon: '💥', text: 'A car crash at 50 km/h' },
+            { maxEnergy: Infinity, icon: '☠️', text: 'A potentially lethal force' }
+        ];
+
+        // Navigation mobile
         function showSection(sectionId) {
+            if (!isMobile) return; // Ne fonctionne que sur mobile
+
             // Masquer toutes les sections
-            document.querySelectorAll('.section').forEach(section => {
+            document.querySelectorAll('.section-mobile').forEach(section => {
                 section.classList.remove('active');
             });
             
@@ -727,7 +1108,9 @@
             document.getElementById(sectionId).classList.add('active');
             
             // Activer le bouton correspondant
-            event.target.classList.add('active');
+            if (event && event.target) {
+                event.target.classList.add('active');
+            }
             
             // Scroll vers le haut
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -742,10 +1125,10 @@
             icon.classList.toggle('collapsed');
         }
 
-        // Créer les presets
+        // Create preset buttons
         function createPresets() {
             const grid = document.getElementById('presetsGrid');
-            PRESETS.forEach((preset) => {
+            PRESETS.forEach((preset, index) => {
                 const btn = document.createElement('button');
                 btn.className = 'preset-btn';
                 btn.innerHTML = `
@@ -758,7 +1141,7 @@
             });
         }
 
-        // Sélectionner un preset
+        // Select preset
         function selectPreset(preset, button) {
             document.querySelectorAll('.preset-btn').forEach(btn => btn.classList.remove('active'));
             button.classList.add('active');
@@ -766,7 +1149,7 @@
             fallingObject.textContent = preset.emoji;
         }
 
-        // Définir le poids
+        // Set weight from various sources
         function setWeight(kg) {
             if (isUpdating) return;
             isUpdating = true;
@@ -780,62 +1163,63 @@
             updateDisplay();
         }
 
-        // Événements de poids
+        // Update weight from slider
         weightInput.addEventListener('input', () => {
-            if (!isUpdating) {
-                setWeight(parseFloat(weightInput.value));
-                clearPresetSelection();
-            }
+            if (isUpdating) return;
+            setWeight(parseFloat(weightInput.value));
+            clearPresetSelection();
         });
 
+        // Update weight from kg input
         weightKgInput.addEventListener('input', () => {
-            if (!isUpdating) {
-                const kg = parseFloat(weightKgInput.value) || 0.01;
-                setWeight(Math.max(0.01, Math.min(20, kg)));
-                clearPresetSelection();
-            }
+            if (isUpdating) return;
+            const kg = parseFloat(weightKgInput.value) || 0.01;
+            setWeight(Math.max(0.01, Math.min(20, kg)));
+            clearPresetSelection();
         });
 
+        // Update weight from grams input
         weightGramsInput.addEventListener('input', () => {
-            if (!isUpdating) {
-                const grams = parseFloat(weightGramsInput.value) || 10;
-                const kg = grams / 1000;
-                setWeight(Math.max(0.01, Math.min(20, kg)));
-                clearPresetSelection();
-            }
+            if (isUpdating) return;
+            const grams = parseFloat(weightGramsInput.value) || 10;
+            const kg = grams / 1000;
+            setWeight(Math.max(0.01, Math.min(20, kg)));
+            clearPresetSelection();
         });
 
-        heightInput.addEventListener('input', () => {
-            currentHeight = parseFloat(heightInput.value);
-            updateDisplay();
-        });
-
+        // Clear preset selection
         function clearPresetSelection() {
             document.querySelectorAll('.preset-btn').forEach(btn => btn.classList.remove('active'));
             fallingObject.textContent = '⚫';
         }
 
-        // Créer la timeline
+        // Create equivalence timeline
         function createTimeline() {
             const track = document.getElementById('timelineTrack');
             track.innerHTML = '';
             
-            EQUIVALENCES.forEach((equiv) => {
+            EQUIVALENCES.forEach((equiv, index) => {
                 const item = document.createElement('div');
                 item.className = 'timeline-item';
                 item.innerHTML = `
                     <span class="timeline-emoji">${equiv.icon}</span>
                     <span class="timeline-energy">${equiv.maxEnergy === Infinity ? '150+' : equiv.maxEnergy}J</span>
                 `;
+                item.title = equiv.text;
                 track.appendChild(item);
             });
         }
 
-        // Mettre à jour la timeline
+        // Update timeline marker position
         function updateTimeline(energy) {
-            const items = document.querySelectorAll('.timeline-item');
+            const track = document.getElementById('timelineTrack');
+            const marker = document.getElementById('currentMarker');
+            const items = track.querySelectorAll('.timeline-item');
+            
+            // Remove active class from all items
             items.forEach(item => item.classList.remove('active'));
             
+            // Find current equivalence index
             let currentIndex = 0;
             for (let i = 0; i < EQUIVALENCES.length; i++) {
                 if (energy <= EQUIVALENCES[i].maxEnergy) {
@@ -844,13 +1228,22 @@
                 }
             }
             
+            // Add active class to current item
             if (items[currentIndex]) {
                 items[currentIndex].classList.add('active');
+                
+                // Position marker
+                const itemRect = items[currentIndex].getBoundingClientRect();
+                const trackRect = track.getBoundingClientRect();
+                const markerLeft = itemRect.left - trackRect.left + (itemRect.width / 2) - 40;
+                marker.style.left = markerLeft + 'px';
+                
+                // Scroll item into view if needed
                 items[currentIndex].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
             }
         }
 
-        // Trouver l'équivalence
+        // Find appropriate equivalence
         function getEquivalence(energy) {
             for (let equiv of EQUIVALENCES) {
                 if (energy <= equiv.maxEnergy) {
@@ -860,26 +1253,29 @@
             return EQUIVALENCES[EQUIVALENCES.length - 1];
         }
 
-        // Mettre à jour l'échelle de hauteur
+        // Update height scale
         function updateHeightScale() {
             heightScale.innerHTML = '';
+            const maxHeight = parseFloat(heightInput.max);
             const marks = [0, 3, 6, 9, 12, 15];
             
             marks.forEach(mark => {
-                const div = document.createElement('div');
-                div.className = 'scale-mark';
-                div.textContent = mark + 'm';
-                div.style.top = (100 - (mark / 15 * 100)) + '%';
-                heightScale.appendChild(div);
+                if (mark <= maxHeight) {
+                    const div = document.createElement('div');
+                    div.className = 'scale-mark';
+                    div.textContent = mark + 'm';
+                    div.style.top = (100 - (mark / maxHeight * 100)) + '%';
+                    heightScale.appendChild(div);
+                }
             });
         }
 
-        // Calculer l'énergie
+        // Calculate potential/kinetic energy
         function calculateEnergy(mass, height) {
             return mass * g * height;
         }
 
-        // Déterminer le niveau de dégâts
+        // Determine damage level
         function getDamageLevel(energy) {
             if (energy < THRESHOLDS.slight) return 'slight';
             if (energy < THRESHOLDS.minor) return 'minor';
@@ -887,7 +1283,7 @@
             return 'fatality';
         }
 
-        // Mettre à jour l'affichage
+        // Update display
         function updateDisplay() {
             currentWeight = parseFloat(weightInput.value);
             currentHeight = parseFloat(heightInput.value);
@@ -897,25 +1293,26 @@
             const energy = calculateEnergy(currentWeight, currentHeight);
             energyDisplay.textContent = `Energy: ${energy.toFixed(1)} J`;
             
-            // Mettre à jour l'équivalence
+            // Update equivalence
             const equiv = getEquivalence(energy);
-            document.getElementById('equivalenceDisplay').innerHTML = `
-                <div class="equivalence-icon">${equiv.icon}</div>
-                <div class="equivalence-text">${equiv.text}</div>
+            document.getElementById('equivalenceDisplayLarge').innerHTML = `
+                <div class="equivalence-icon-large">${equiv.icon}</div>
+                <div class="equivalence-text-large">${equiv.text}</div>
             `;
             
-            // Mettre à jour la timeline
+            // Update timeline
             updateTimeline(energy);
             
-            // Positionner l'objet
-            const maxHeight = 15;
-            const visualizationHeight = 400;
+            // Position object based on height
+            const maxHeight = parseFloat(heightInput.max);
+            const visualizationElement = document.getElementById('visualization');
+            const visualizationHeight = visualizationElement.offsetHeight;
             const groundHeight = 80;
             const usableHeight = visualizationHeight - groundHeight;
             const topPosition = ((maxHeight - currentHeight) / maxHeight) * usableHeight;
             fallingObject.style.top = topPosition + 'px';
             
-            // Mettre à jour les cartes de dégâts
+            // Update damage cards
             const damageLevel = getDamageLevel(energy);
             ['slight', 'minor', 'major', 'fatality'].forEach(level => {
                 const card = document.getElementById(level);
@@ -927,31 +1324,44 @@
             });
         }
 
-        // Simuler la chute
+        // Events
+        heightInput.addEventListener('input', () => {
+            currentHeight = parseFloat(heightInput.value);
+            updateDisplay();
+        });
+
+        // Simulate fall
         function simulateFall() {
+            // Reset object
             fallingObject.style.animation = 'none';
             impactEffect.classList.remove('show');
             person.textContent = '🧍';
             
+            // Force reflow to restart animation
             void fallingObject.offsetWidth;
             
             setTimeout(() => {
-                const maxHeight = 15;
-                const visualizationHeight = 400;
+                const maxHeight = parseFloat(heightInput.max);
+                const visualizationElement = document.getElementById('visualization');
+                const visualizationHeight = visualizationElement.offsetHeight;
                 const groundHeight = 80;
                 const usableHeight = visualizationHeight - groundHeight;
                 const startPosition = ((maxHeight - currentHeight) / maxHeight) * usableHeight;
                 
+                // Calculate fall time (t = √(2h/g))
                 const fallTime = Math.sqrt(2 * currentHeight / g);
                 
+                // Set start position and animate
                 fallingObject.style.setProperty('--start-height', startPosition + 'px');
                 fallingObject.style.animation = `fall ${fallTime}s linear`;
                 
+                // Impact after fall time
                 setTimeout(() => {
                     impactEffect.classList.add('show');
                     
                     const damageLevel = getDamageLevel(calculateEnergy(currentWeight, currentHeight));
                     
+                    // Change person state based on damage
                     switch(damageLevel) {
                         case 'slight':
                             person.textContent = '🤕';
@@ -974,7 +1384,13 @@
             }, 100);
         }
 
-        // Initialisation
+        // Recalculate on window resize
+        window.addEventListener('resize', () => {
+            isMobile = window.innerWidth <= 768;
+            updateDisplay();
+        });
+
+        // Initialization
         createPresets();
         createTimeline();
         updateHeightScale();
