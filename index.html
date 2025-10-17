@@ -131,11 +131,73 @@
         .header h1 {
             font-size: 2.5em;
             margin-bottom: 10px;
+            cursor: default;
         }
 
         .header p {
             font-size: 1.1em;
             opacity: 0.95;
+        }
+
+        .header-description {
+            font-size: 0.95em;
+            opacity: 0.85;
+            margin-top: 15px;
+            font-style: italic;
+            line-height: 1.5;
+        }
+
+        .lightning-easter-egg {
+            display: inline-block;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s;
+            animation: sparkle 2s infinite;
+        }
+
+        .lightning-easter-egg:hover {
+            transform: scale(1.2) rotate(15deg);
+            filter: brightness(1.5);
+        }
+
+        @keyframes sparkle {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .florent-label {
+            position: absolute;
+            bottom: 40px;
+            left: 30%;
+            transform: translateX(-50%);
+            background: rgba(255,255,255,0.95);
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.85em;
+            font-weight: bold;
+            color: #495057;
+            z-index: 8;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            pointer-events: none;
+        }
+
+        .person.electrocuted {
+            animation: electrocute 0.5s ease-out;
+        }
+
+        @keyframes electrocute {
+            0%, 100% { 
+                filter: brightness(1);
+                transform: translateX(-50%) rotate(0deg);
+            }
+            10%, 30%, 50%, 70%, 90% { 
+                filter: brightness(5) contrast(2);
+                transform: translateX(-50%) rotate(-5deg);
+            }
+            20%, 40%, 60%, 80% { 
+                filter: brightness(5) contrast(2);
+                transform: translateX(-50%) rotate(5deg);
+            }
         }
 
         .main-grid {
@@ -1037,6 +1099,16 @@
                 border-top: 12px solid white;
                 bottom: -11px;
             }
+
+            .florent-label {
+                font-size: 0.7em;
+                padding: 3px 8px;
+                bottom: 30px;
+            }
+
+            .lightning-easter-egg {
+                font-size: 0.9em;
+            }
         }
     </style>
 </head>
@@ -1047,7 +1119,7 @@
             <img src="./logo_cou.png" alt="Logo COU" class="header-logo-mobile" onerror="this.style.display='none'">
             <img src="./logo_drop.png" alt="Logo Drop" class="header-logo-mobile" onerror="this.style.display='none'">
         </div>
-        <div class="nav-title">⚠️ Falling Object Simulator</div>
+        <div class="nav-title">⚠️ Falling Object Simulator <span class="lightning-easter-egg" onclick="triggerLightning()">⚡</span></div>
         <div class="nav-buttons">
             <button class="nav-btn active" onclick="showSection('controls')">⚙️ Controls</button>
             <button class="nav-btn" onclick="showSection('impact')">🔥 Impact</button>
@@ -1060,8 +1132,9 @@
         <div class="header">
             <img src="./logo_cou.png" alt="Logo" class="header-logo" onerror="this.style.display='none'">
             <div class="header-content">
-                <h1>⚠️ Falling Object Impact Simulator</h1>
+                <h1>⚠️ Falling Object Impact Simulator <span class="lightning-easter-egg" onclick="triggerLightning()">⚡</span></h1>
                 <p>Understand the dangers of objects at height</p>
+                <p class="header-description">This tool is made for educational purposes. Try to see the effects of usual objects falling on someone from different heights!</p>
             </div>
             <img src="./logo_drop.png" alt="Logo" class="header-logo" onerror="this.style.display='none'">
         </div>
@@ -1143,7 +1216,8 @@
                                 <div class="reference-label">Car<br>1.5m</div>
                             </div>
                         </div>
-                        <div class="falling-object" id="fallingObject">🪴</div>
+                        <div class="falling-object" id="fallingObject">🌻</div>
+                        <div class="florent-label">👋 Meet Florent!</div>
                         <div class="person" id="person">🧍</div>
                         <div class="impact-effect" id="impactEffect">💥</div>
                         <div class="speech-bubble" id="speechBubble"></div>
@@ -1238,7 +1312,7 @@
             slight: ["Ouch!", "That hurts!", "Ow ow ow!", "Hey, watch it!"],
             minor: ["I need help!", "MEDIC!", "Call someone!", "This is bad!"],
             major: ["CALL AN AMBULANCE!", "EMERGENCY!", "HELP ME NOW!", "I'M SERIOUSLY HURT!"],
-            fatality: ["RIP... 💀", "☠️", "I was too young to die...", "..."]
+            fatality: ["RIP... 💀", "☠️", "Game Over...", "..."]
         };
 
         // Object presets (weight in kg)
@@ -1250,13 +1324,13 @@
             { name: 'Flower Pot', icon: '🌻', weight: 2.0, emoji: '🌻' },
             { name: 'Work Boot', icon: '🥾', weight: 1.2, emoji: '🥾' },
             { name: 'Hammer', icon: '🔨', weight: 0.5, emoji: '🔨' },
-            { name: 'Screwdriver', icon: '🧰', weight: 0.2, emoji: '🧰' },
-            { name: 'Wood Plank', icon: '🌲', weight: 2.5, emoji: '🌲' },
+            { name: 'Screwdriver', icon: '🪛', weight: 0.2, emoji: '🪛' },
+            { name: 'Wood Plank', icon: '🪵', weight: 2.5, emoji: '🪵' },
             { name: 'Brick', icon: '🧱', weight: 3.5, emoji: '🧱' },
             { name: 'Water Bottle', icon: '🧴', weight: 1.0, emoji: '🧴' },
             { name: 'Drill', icon: '⚙️', weight: 1.8, emoji: '⚙️' },
             { name: 'Adjustable Wrench', icon: '🔧', weight: 0.35, emoji: '🔧' },
-            { name: 'Paint Can', icon: '🎨', weight: 5.0, emoji: '🎨' },
+            { name: 'Paint Can', icon: '🪣', weight: 5.0, emoji: '🪣' },
             { name: 'Steel Pipe', icon: '🛠️', weight: 4.0, emoji: '🛠️' },
             { name: 'Clipboard', icon: '📋', weight: 0.3, emoji: '📋' }
         ];
@@ -1387,6 +1461,61 @@
         function clearPresetSelection() {
             document.querySelectorAll('.preset-btn').forEach(btn => btn.classList.remove('active'));
             fallingObject.textContent = '🌻';
+        }
+
+        // Easter egg: Lightning strike!
+        function triggerLightning() {
+            // Stop any ongoing animation
+            fallingObject.style.animation = 'none';
+            impactEffect.classList.remove('show');
+            speechBubble.classList.remove('show');
+            
+            // Reset person
+            person.textContent = '🧍';
+            person.classList.remove('electrocuted');
+            
+            // Force reflow
+            void person.offsetWidth;
+            
+            // Apply electrocution effect
+            person.classList.add('electrocuted');
+            
+            // Show lightning impact after a brief moment
+            setTimeout(() => {
+                impactEffect.textContent = '⚡';
+                impactEffect.classList.add('show');
+                
+                // Change to electrocuted state
+                person.textContent = '😵';
+                
+                // Show speech bubble
+                const electricMessages = [
+                    "ZZZZAP! ⚡",
+                    "I'm SHOCKED!",
+                    "That was ELECTRIFYING!",
+                    "OUCH! ⚡⚡⚡",
+                    "I didn't see that coming!"
+                ];
+                const randomMessage = electricMessages[Math.floor(Math.random() * electricMessages.length)];
+                speechBubble.textContent = randomMessage;
+                speechBubble.classList.add('show');
+                
+                // After effect, show burned/dead state
+                setTimeout(() => {
+                    person.textContent = '🪦';
+                    impactEffect.textContent = '💀';
+                    speechBubble.textContent = "I'm toast... 🔥";
+                    
+                    // Remove effects after some time
+                    setTimeout(() => {
+                        impactEffect.classList.remove('show');
+                        speechBubble.classList.remove('show');
+                        person.classList.remove('electrocuted');
+                        person.textContent = '🧍';
+                        impactEffect.textContent = '💥';
+                    }, 2500);
+                }, 1000);
+            }, 300);
         }
 
         // Create equivalence timeline
