@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EDF Power Solutions - Falling Object Impact Simulator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #00A8E9 0%, #000E47 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Navigation fixe en haut */
+        .mobile-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(135deg, #00A8E9 0%, #000E47 100%);
+            padding: 10px;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        .nav-title {
+            color: white;
+            text-align: center;
+            font-size: 1.1em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 5px;
+            overflow-x: auto;
+            padding: 5px;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+
+        .nav-buttons::-webkit-scrollbar {
+            display: none;
+        }
+
+        .nav-btn {
+            flex: 0 0 auto;
+            background: rgba(255,255,255,0.2);
+            border: 2px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .nav-btn.active {
+            background: white;
+            color: #00A8E9;
+            border-color: white;
+        }
+
+        .nav-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Container principal */
+        .container {
+            margin-top: 120px;
+            padding: 10px;
+            padding-bottom: 20px;
+        }
+
+        /* Sections */
+        .section {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .section-title {
+            color: #00A8E9;
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        /* Contrôles */
+        .control-group {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            border: 2px solid #e9ecef;
+        }
+
+        .control-group label {
+            display: block;
+            font-weight: bold;
+            color: #495057;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .control-group input[type="range"] {
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: #dee2e6;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .control-group input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #00A8E9;
+            cursor: pointer;
+        }
+
+        .weight-inputs {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .weight-input-field {
+            flex: 1;
+        }
+
+        .weight-input-field label {
+            font-size: 0.8em;
+            color: #6c757d;
+            font-weight: normal;
+            margin-bottom: 5px;
+        }
+
+        .weight-input-field input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: bold;
+            color: #00A8E9;
+            text-align: center;
+        }
+
+        .value-display {
+            font-size: 2em;
+            font-weight: bold;
+            color: #00A8E9;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        /* Presets */
+        .presets-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+            margin-top: 10px;
+        }
+
+        .preset-btn {
+            background: white;
+            border: 2px solid #dee2e6;
+            padding: 8px 4px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .preset-btn.active {
+            border-color: #00A8E9;
+            background: #e6f7ff;
+            transform: scale(1.05);
+        }
+
+        .preset-icon {
+            font-size: 1.8em;
+            margin-bottom: 2px;
+        }
+
+        .preset-name {
+            font-weight: bold;
+            font-size: 0.65em;
+            color: #495057;
+            line-height: 1.1;
+        }
+
+        .preset-weight {
+            font-size: 0.6em;
+            color: #6c757d;
+            margin-top: 2px;
+        }
+
+        /* Visualisation */
+        .visualization {
+            position: relative;
+            background: linear-gradient(180deg, #e3f2fd 0%, #ffffff 100%);
+            border-radius: 12px;
+            border: 3px solid #e9ecef;
+            height: 400px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+
+        .height-scale {
+            position: absolute;
+            left: 10px;
+            top: 20px;
+            bottom: 80px;
+            width: 40px;
+            border-right: 3px solid #adb5bd;
+        }
+
+        .scale-mark {
+            position: absolute;
+            right: 5px;
+            font-size: 0.75em;
+            color: #6c757d;
+        }
+
+        .falling-object {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 60px;
+            background: #f5576c;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5em;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            transition: top 0.05s linear;
+        }
+
+        .ground {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 80px;
+            background: #8b4513;
+            border-top: 4px solid #654321;
+        }
+
+        .person {
+            position: absolute;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 3.5em;
+            z-index: 10;
+        }
+
+        .impact-effect {
+            position: absolute;
+            bottom: 160px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 3.5em;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .impact-effect.show {
+            opacity: 1;
+        }
+
+        .btn-simulate {
+            width: 100%;
+            background: linear-gradient(135deg, #00A8E9 0%, #000E47 100%);
+            color: white;
+            border: none;
+            padding: 18px;
+            font-size: 1.2em;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            margin-bottom: 15px;
+        }
+
+        .btn-simulate:active {
+            transform: scale(0.98);
+        }
+
+        .warning {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            color: #856404;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        /* Timeline */
+        .timeline-track {
+            display: flex;
+            gap: 5px;
+            background: linear-gradient(90deg, 
+                #28a745 0%, 
+                #28a745 10%, 
+                #ffc107 10%, 
+                #ffc107 30%, 
+                #fd7e14 30%, 
+                #fd7e14 60%, 
+                #dc3545 60%, 
+                #dc3545 100%);
+            padding: 15px;
+            border-radius: 12px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            margin-bottom: 20px;
+        }
+
+        .timeline-item {
+            flex: 0 0 auto;
+            text-align: center;
+            padding: 10px;
+            transition: all 0.3s;
+            border-radius: 10px;
+            min-width: 80px;
+        }
+
+        .timeline-item.active {
+            background: rgba(255, 255, 255, 0.5);
+            transform: scale(1.1);
+        }
+
+        .timeline-emoji {
+            font-size: 2.5em;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .timeline-energy {
+            font-size: 0.7em;
+            font-weight: bold;
+            color: #fff;
+            background: rgba(0,0,0,0.4);
+            padding: 3px 8px;
+            border-radius: 12px;
+            white-space: nowrap;
+        }
+
+        .equivalence-display {
+            background: linear-gradient(135deg, #00A8E9 0%, #000E47 100%);
+            padding: 20px;
+            border-radius: 12px;
+            color: white;
+            text-align: center;
+        }
+
+        .equivalence-icon {
+            font-size: 4em;
+            margin-bottom: 15px;
+        }
+
+        .equivalence-text {
+            font-size: 1.2em;
+            font-weight: bold;
+            line-height: 1.4;
+        }
+
+        /* Résultats */
+        .energy-display {
+            text-align: center;
+            font-size: 2em;
+            font-weight: bold;
+            color: #00A8E9;
+            margin-bottom: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+        }
+
+        .damage-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            border: 3px solid transparent;
+            margin-bottom: 15px;
+            transition: all 0.3s;
+        }
+
+        .damage-card.active {
+            transform: scale(1.02);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .damage-card.slight { border-color: #28a745; }
+        .damage-card.slight.active { background: #d4edda; }
+
+        .damage-card.minor { border-color: #ffc107; }
+        .damage-card.minor.active { background: #fff3cd; }
+
+        .damage-card.major { border-color: #fd7e14; }
+        .damage-card.major.active { background: #ffe5d0; }
+
+        .damage-card.fatality { border-color: #dc3545; }
+        .damage-card.fatality.active { background: #f8d7da; }
+
+        .damage-icon {
+            font-size: 3.5em;
+            margin-bottom: 10px;
+        }
+
+        .damage-title {
+            font-weight: bold;
+            font-size: 1.3em;
+            margin-bottom: 10px;
+            color: #495057;
+        }
+
+        .damage-description {
+            font-size: 1em;
+            color: #6c757d;
+            line-height: 1.6;
+            margin-bottom: 8px;
+        }
+
+        .energy-threshold {
+            font-size: 0.9em;
+            color: #868e96;
+            font-weight: bold;
+        }
+
+        /* Animation de chute */
+        .animate-fall {
+            animation: fall linear;
+        }
+
+        @keyframes fall {
+            from { top: var(--start-height); }
+            to { top: calc(100% - 140px); }
+        }
+
+        /* Logos header */
+        .header-logos {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px 10px;
+            margin-bottom: 5px;
+        }
+
+        .header-logo {
+            max-height: 35px;
+            max-width: 90px;
+            object-fit: contain;
+        }
+
+        /* Collapsible presets */
+        .presets-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+            margin-bottom: 10px;
+        }
+
+        .presets-header h4 {
+            font-size: 0.9em;
+            color: #495057;
+            margin: 0;
+        }
+
+        .collapse-icon {
+            font-size: 1em;
+            transition: transform 0.3s;
+            color: #00A8E9;
+        }
+
+        .collapse-icon.collapsed {
+            transform: rotate(-90deg);
+        }
+
+        .presets-content {
+            max-height: 500px;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .presets-content.collapsed {
+            max-height: 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation mobile -->
+    <div class="mobile-nav">
+        <div class="header-logos">
+            <img src="./logo_cou.png" alt="Logo COU" class="header-logo" onerror="this.style.display='none'">
+            <img src="./logo_drop.png" alt="Logo Drop" class="header-logo" onerror="this.style.display='none'">
+        </div>
+        <div class="nav-title">⚠️ Falling Object Simulator</div>
+        <div class="nav-buttons">
+            <button class="nav-btn active" onclick="showSection('controls')">⚙️ Controls & Sim</button>
+            <button class="nav-btn" onclick="showSection('impact')">🔥 Impact Force</button>
+            <button class="nav-btn" onclick="showSection('results')">📊 Results</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Section 1: Controls & Simulation -->
+        <div id="controls" class="section active">
+            <h2 class="section-title">⚙️ Controls & Simulation</h2>
+            
+            <div class="control-group">
+                <label>💪 Object Weight</label>
+                <input type="range" id="weight" min="0.01" max="20" step="0.01" value="1">
+                <div class="weight-inputs">
+                    <div class="weight-input-field">
+                        <label>Kilograms</label>
+                        <input type="number" id="weightKg" min="0.01" max="20" step="0.01" value="1.0">
+                    </div>
+                    <div class="weight-input-field">
+                        <label>Grams</label>
+                        <input type="number" id="weightGrams" min="10" max="20000" step="1" value="1000">
+                    </div>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <div class="presets-header" onclick="togglePresets()">
+                    <h4>🔧 Common Objects</h4>
+                    <span class="collapse-icon collapsed" id="collapseIcon">▼</span>
+                </div>
+                <div class="presets-content collapsed" id="presetsContent">
+                    <div class="presets-grid" id="presetsGrid"></div>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label>📏 Drop Height</label>
+                <input type="range" id="height" min="0.5" max="15" step="0.5" value="10">
+                <div class="value-display" id="heightValue">10.0 m</div>
+            </div>
+
+            <div class="visualization" id="visualization">
+                <div class="height-scale" id="heightScale"></div>
+                <div class="falling-object" id="fallingObject">⚫</div>
+                <div class="person" id="person">🧍</div>
+                <div class="impact-effect" id="impactEffect">💥</div>
+                <div class="ground"></div>
+            </div>
+
+            <button class="btn-simulate" onclick="simulateFall()">
+                🚀 Run Simulation
+            </button>
+
+            <div class="warning">
+                ⚠️ Even small objects can cause serious injuries!
+            </div>
+        </div>
+
+        <!-- Section 2: Impact Force -->
+        <div id="impact" class="section">
+            <h2 class="section-title">🔥 Impact Force Scale</h2>
+            
+            <div class="timeline-track" id="timelineTrack"></div>
+            
+            <div class="equivalence-display" id="equivalenceDisplay">
+                <div class="equivalence-icon">🤔</div>
+                <div class="equivalence-text">Adjust parameters to see equivalent force</div>
+            </div>
+        </div>
+
+        <!-- Section 3: Results -->
+        <div id="results" class="section">
+            <h2 class="section-title">📊 Impact Analysis</h2>
+            
+            <div class="energy-display" id="energyDisplay">
+                Energy: 0 J
+            </div>
+
+            <div class="damage-card slight" id="slight">
+                <div class="damage-icon">🩹</div>
+                <div class="damage-title">SLIGHT</div>
+                <div class="damage-description">📋 Clipboard<br>🍎 Apple<br>🔧 Wrench</div>
+                <div class="energy-threshold">&lt; 15 J</div>
+            </div>
+
+            <div class="damage-card minor" id="minor">
+                <div class="damage-icon">🥼</div>
+                <div class="damage-title">MINOR</div>
+                <div class="damage-description">🔨 Hammer<br>🧱 Brick<br>👷 Hard Hat</div>
+                <div class="energy-threshold">15-50 J</div>
+            </div>
+
+            <div class="damage-card major" id="major">
+                <div class="damage-icon">👨‍🦽</div>
+                <div class="damage-title">MAJOR</div>
+                <div class="damage-description">🪓 Axe<br>⚙️ Engine Part<br>🪨 Large Rock</div>
+                <div class="energy-threshold">50-150 J</div>
+            </div>
+
+            <div class="damage-card fatality" id="fatality">
+                <div class="damage-icon">⚰️</div>
+                <div class="damage-title">FATALITY</div>
+                <div class="damage-description">🗜️ Steel Beam<br>⚓ Anchor<br>🪨 Boulder</div>
+                <div class="energy-threshold">&gt; 150 J</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variables globales
+        const weightInput = document.getElementById('weight');
+        const weightKgInput = document.getElementById('weightKg');
+        const weightGramsInput = document.getElementById('weightGrams');
+        const heightInput = document.getElementById('height');
+        const heightValue = document.getElementById('heightValue');
+        const energyDisplay = document.getElementById('energyDisplay');
+        const fallingObject = document.getElementById('fallingObject');
+        const impactEffect = document.getElementById('impactEffect');
+        const person = document.getElementById('person');
+        const heightScale = document.getElementById('heightScale');
+
+        let currentWeight = 1;
+        let currentHeight = 10;
+        let isUpdating = false;
+        const g = 9.81;
+
+        // Object presets
+        const PRESETS = [
+            { name: '12mm Wrench', icon: '🔧', weight: 0.15, emoji: '🔧' },
+            { name: 'M10 Bolt', icon: '🔩', weight: 0.05, emoji: '🔩' },
+            { name: 'iPhone', icon: '📱', weight: 0.2, emoji: '📱' },
+            { name: 'Hard Hat', icon: '👷', weight: 0.4, emoji: '⛑️' },
+            { name: 'Work Boot', icon: '👢', weight: 1.2, emoji: '🥾' },
+            { name: 'Hammer', icon: '🔨', weight: 0.5, emoji: '🔨' },
+            { name: 'Screwdriver', icon: '🪛', weight: 0.2, emoji: '🪛' },
+            { name: 'Wood Plank', icon: '🪵', weight: 2.5, emoji: '🪵' },
+            { name: 'Brick', icon: '🧱', weight: 3.5, emoji: '🧱' },
+            { name: 'Water Bottle', icon: '💧', weight: 1.0, emoji: '🧴' },
+            { name: 'Drill', icon: '🔩', weight: 1.8, emoji: '⚙️' },
+            { name: 'Adjustable Wrench', icon: '🔧', weight: 0.35, emoji: '🔧' },
+            { name: 'Paint Can', icon: '🎨', weight: 5.0, emoji: '🪣' },
+            { name: 'Steel Pipe', icon: '⚙️', weight: 4.0, emoji: '🛠️' },
+            { name: 'Clipboard', icon: '📋', weight: 0.3, emoji: '📋' }
+        ];
+
+        // Equivalences
+        const EQUIVALENCES = [
+            { maxEnergy: 5, icon: '🤝', text: 'A friendly tap' },
+            { maxEnergy: 10, icon: '👋', text: 'A pat on the shoulder' },
+            { maxEnergy: 15, icon: '🥊', text: 'A light punch' },
+            { maxEnergy: 30, icon: '⚾', text: 'A baseball thrown' },
+            { maxEnergy: 50, icon: '🏏', text: 'A cricket bat swing' },
+            { maxEnergy: 80, icon: '⚽', text: 'A pro soccer kick' },
+            { maxEnergy: 120, icon: '🥋', text: 'A karate chop' },
+            { maxEnergy: 150, icon: '🏈', text: 'A rugby tackle' },
+            { maxEnergy: 250, icon: '🐘', text: 'An elephant stepping on you' },
+            { maxEnergy: 400, icon: '🥊', text: 'A Mike Tyson uppercut' },
+            { maxEnergy: 600, icon: '🏍️', text: 'Motorcycle crash 30 km/h' },
+            { maxEnergy: 900, icon: '🚗', text: 'Low-speed car impact' },
+            { maxEnergy: 1500, icon: '💥', text: 'Car crash at 50 km/h' },
+            { maxEnergy: Infinity, icon: '☠️', text: 'Potentially lethal force' }
+        ];
+
+        const THRESHOLDS = {
+            slight: 15,
+            minor: 50,
+            major: 150
+        };
+
+        // Navigation entre sections
+        function showSection(sectionId) {
+            // Masquer toutes les sections
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Désactiver tous les boutons
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Activer la section demandée
+            document.getElementById(sectionId).classList.add('active');
+            
+            // Activer le bouton correspondant
+            event.target.classList.add('active');
+            
+            // Scroll vers le haut
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Toggle presets collapse
+        function togglePresets() {
+            const content = document.getElementById('presetsContent');
+            const icon = document.getElementById('collapseIcon');
+            
+            content.classList.toggle('collapsed');
+            icon.classList.toggle('collapsed');
+        }
+
+        // Créer les presets
+        function createPresets() {
+            const grid = document.getElementById('presetsGrid');
+            PRESETS.forEach((preset) => {
+                const btn = document.createElement('button');
+                btn.className = 'preset-btn';
+                btn.innerHTML = `
+                    <div class="preset-icon">${preset.emoji}</div>
+                    <div class="preset-name">${preset.name}</div>
+                    <div class="preset-weight">${preset.weight < 1 ? (preset.weight * 1000).toFixed(0) + 'g' : preset.weight.toFixed(1) + 'kg'}</div>
+                `;
+                btn.onclick = () => selectPreset(preset, btn);
+                grid.appendChild(btn);
+            });
+        }
+
+        // Sélectionner un preset
+        function selectPreset(preset, button) {
+            document.querySelectorAll('.preset-btn').forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+            setWeight(preset.weight);
+            fallingObject.textContent = preset.emoji;
+        }
+
+        // Définir le poids
+        function setWeight(kg) {
+            if (isUpdating) return;
+            isUpdating = true;
+            
+            currentWeight = kg;
+            weightInput.value = kg;
+            weightKgInput.value = kg.toFixed(2);
+            weightGramsInput.value = Math.round(kg * 1000);
+            
+            isUpdating = false;
+            updateDisplay();
+        }
+
+        // Événements de poids
+        weightInput.addEventListener('input', () => {
+            if (!isUpdating) {
+                setWeight(parseFloat(weightInput.value));
+                clearPresetSelection();
+            }
+        });
+
+        weightKgInput.addEventListener('input', () => {
+            if (!isUpdating) {
+                const kg = parseFloat(weightKgInput.value) || 0.01;
+                setWeight(Math.max(0.01, Math.min(20, kg)));
+                clearPresetSelection();
+            }
+        });
+
+        weightGramsInput.addEventListener('input', () => {
+            if (!isUpdating) {
+                const grams = parseFloat(weightGramsInput.value) || 10;
+                const kg = grams / 1000;
+                setWeight(Math.max(0.01, Math.min(20, kg)));
+                clearPresetSelection();
+            }
+        });
+
+        heightInput.addEventListener('input', () => {
+            currentHeight = parseFloat(heightInput.value);
+            updateDisplay();
+        });
+
+        function clearPresetSelection() {
+            document.querySelectorAll('.preset-btn').forEach(btn => btn.classList.remove('active'));
+            fallingObject.textContent = '⚫';
+        }
+
+        // Créer la timeline
+        function createTimeline() {
+            const track = document.getElementById('timelineTrack');
+            track.innerHTML = '';
+            
+            EQUIVALENCES.forEach((equiv) => {
+                const item = document.createElement('div');
+                item.className = 'timeline-item';
+                item.innerHTML = `
+                    <span class="timeline-emoji">${equiv.icon}</span>
+                    <span class="timeline-energy">${equiv.maxEnergy === Infinity ? '150+' : equiv.maxEnergy}J</span>
+                `;
+                track.appendChild(item);
+            });
+        }
+
+        // Mettre à jour la timeline
+        function updateTimeline(energy) {
+            const items = document.querySelectorAll('.timeline-item');
+            items.forEach(item => item.classList.remove('active'));
+            
+            let currentIndex = 0;
+            for (let i = 0; i < EQUIVALENCES.length; i++) {
+                if (energy <= EQUIVALENCES[i].maxEnergy) {
+                    currentIndex = i;
+                    break;
+                }
+            }
+            
+            if (items[currentIndex]) {
+                items[currentIndex].classList.add('active');
+                items[currentIndex].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            }
+        }
+
+        // Trouver l'équivalence
+        function getEquivalence(energy) {
+            for (let equiv of EQUIVALENCES) {
+                if (energy <= equiv.maxEnergy) {
+                    return equiv;
+                }
+            }
+            return EQUIVALENCES[EQUIVALENCES.length - 1];
+        }
+
+        // Mettre à jour l'échelle de hauteur
+        function updateHeightScale() {
+            heightScale.innerHTML = '';
+            const marks = [0, 3, 6, 9, 12, 15];
+            
+            marks.forEach(mark => {
+                const div = document.createElement('div');
+                div.className = 'scale-mark';
+                div.textContent = mark + 'm';
+                div.style.top = (100 - (mark / 15 * 100)) + '%';
+                heightScale.appendChild(div);
+            });
+        }
+
+        // Calculer l'énergie
+        function calculateEnergy(mass, height) {
+            return mass * g * height;
+        }
+
+        // Déterminer le niveau de dégâts
+        function getDamageLevel(energy) {
+            if (energy < THRESHOLDS.slight) return 'slight';
+            if (energy < THRESHOLDS.minor) return 'minor';
+            if (energy < THRESHOLDS.major) return 'major';
+            return 'fatality';
+        }
+
+        // Mettre à jour l'affichage
+        function updateDisplay() {
+            currentWeight = parseFloat(weightInput.value);
+            currentHeight = parseFloat(heightInput.value);
+            
+            heightValue.textContent = currentHeight.toFixed(1) + ' m';
+            
+            const energy = calculateEnergy(currentWeight, currentHeight);
+            energyDisplay.textContent = `Energy: ${energy.toFixed(1)} J`;
+            
+            // Mettre à jour l'équivalence
+            const equiv = getEquivalence(energy);
+            document.getElementById('equivalenceDisplay').innerHTML = `
+                <div class="equivalence-icon">${equiv.icon}</div>
+                <div class="equivalence-text">${equiv.text}</div>
+            `;
+            
+            // Mettre à jour la timeline
+            updateTimeline(energy);
+            
+            // Positionner l'objet
+            const maxHeight = 15;
+            const visualizationHeight = 400;
+            const groundHeight = 80;
+            const usableHeight = visualizationHeight - groundHeight;
+            const topPosition = ((maxHeight - currentHeight) / maxHeight) * usableHeight;
+            fallingObject.style.top = topPosition + 'px';
+            
+            // Mettre à jour les cartes de dégâts
+            const damageLevel = getDamageLevel(energy);
+            ['slight', 'minor', 'major', 'fatality'].forEach(level => {
+                const card = document.getElementById(level);
+                if (level === damageLevel) {
+                    card.classList.add('active');
+                } else {
+                    card.classList.remove('active');
+                }
+            });
+        }
+
+        // Simuler la chute
+        function simulateFall() {
+            fallingObject.style.animation = 'none';
+            impactEffect.classList.remove('show');
+            person.textContent = '🧍';
+            
+            void fallingObject.offsetWidth;
+            
+            setTimeout(() => {
+                const maxHeight = 15;
+                const visualizationHeight = 400;
+                const groundHeight = 80;
+                const usableHeight = visualizationHeight - groundHeight;
+                const startPosition = ((maxHeight - currentHeight) / maxHeight) * usableHeight;
+                
+                const fallTime = Math.sqrt(2 * currentHeight / g);
+                
+                fallingObject.style.setProperty('--start-height', startPosition + 'px');
+                fallingObject.style.animation = `fall ${fallTime}s linear`;
+                
+                setTimeout(() => {
+                    impactEffect.classList.add('show');
+                    
+                    const damageLevel = getDamageLevel(calculateEnergy(currentWeight, currentHeight));
+                    
+                    switch(damageLevel) {
+                        case 'slight':
+                            person.textContent = '🤕';
+                            break;
+                        case 'minor':
+                            person.textContent = '😵';
+                            break;
+                        case 'major':
+                            person.textContent = '🚑';
+                            break;
+                        case 'fatality':
+                            person.textContent = '💀';
+                            break;
+                    }
+                    
+                    setTimeout(() => {
+                        impactEffect.classList.remove('show');
+                    }, 1000);
+                }, fallTime * 1000);
+            }, 100);
+        }
+
+        // Initialisation
+        createPresets();
+        createTimeline();
+        updateHeightScale();
+        updateDisplay();
+    </script>
+</body>
+</html>
