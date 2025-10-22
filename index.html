@@ -47,8 +47,8 @@
         }
 
         .header-logo-mobile {
-            max-height: 50px;
-            max-width: 120px;
+            max-height: 80px;
+            max-width: 160px;
             object-fit: contain;
         }
 
@@ -118,8 +118,8 @@
 
         .header-logo {
             max-height: 100%;
-            height: 150px;
-            max-width: 300px;
+            height: 220px;
+            max-width: 350px;
             object-fit: contain;
         }
 
@@ -553,7 +553,7 @@
             font-weight: bold;
             color: #000;
             white-space: nowrap;
-            max-width: 300px;
+            max-width: 350px;
             text-align: center;
             opacity: 0;
             transition: opacity 0.3s;
@@ -742,7 +742,7 @@
             display: flex;
             align-items: center;
             gap: 30px;
-            min-height: 150px;
+            min-height: 220px;
         }
 
         .equivalence-icon-large {
@@ -882,6 +882,8 @@
             .section-mobile {
                 display: none;
                 animation: fadeIn 0.3s ease;
+                padding-top: 50px;
+                padding-bottom: 30px;
             }
 
             .section-mobile.active {
@@ -1135,10 +1137,10 @@
                 <h1>⚠️ Dropped Object Impact Simulator <span class="lightning-easter-egg" onclick="triggerLightning()">⚡</span></h1>
                 <p>Understand the hazards of objects at height</p>
                 <p>Based on https://www.dropsonline.org/drops-guidance-and-resources/drops-calculator</p>
-                <p>class="header-description">This tool is made for educational purposes</p>
+                <p class="header-description">This tool is made for educational purposes</p>
                 <p>Help yourself to assess and visualize the consequences of dropped object</p>
             </div>
-            <img src="./logo_drop.png" alt="Logo" class="header-logo" width="400" height="400" onerror="this.style.display='none'">
+            <img src="./logo_drop.png" alt="Logo" class="header-logo" onerror="this.style.display='none'">
         </div>
 
         <div class="main-grid">
@@ -1779,6 +1781,38 @@
             updateDisplay();
         });
 
+
+        // Swipe handling for timeline
+        let touchStartX = 0;
+        let touchEndX = 0;
+        const timelineContainer = document.querySelector('.timeline-container');
+
+        if (timelineContainer) {
+            timelineContainer.addEventListener('touchstart', (e) => {
+                touchStartX = e.changedTouches[0].screenX;
+            }, false);
+
+            timelineContainer.addEventListener('touchend', (e) => {
+                touchEndX = e.changedTouches[0].screenX;
+                handleTimelineSwipe();
+            }, false);
+        }
+
+        function handleTimelineSwipe() {
+            const swipeThreshold = 50;
+            const diff = touchStartX - touchEndX;
+
+            if (Math.abs(diff) > swipeThreshold) {
+                const scrollAmount = 100;
+                if (diff > 0) {
+                    // Swipe left - scroll right
+                    timelineContainer.scrollLeft += scrollAmount;
+                } else {
+                    // Swipe right - scroll left
+                    timelineContainer.scrollLeft -= scrollAmount;
+                }
+            }
+        }
         // Initialization
         createPresets();
         createTimeline();
