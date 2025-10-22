@@ -553,7 +553,7 @@
             font-weight: bold;
             color: #000;
             white-space: nowrap;
-            max-width: 350px;
+            max-width: 300px;
             text-align: center;
             opacity: 0;
             transition: opacity 0.3s;
@@ -989,20 +989,20 @@
 
             .timeline-track {
                 padding: 10px;
-                min-height: 90px;
+                min-height: 250px;
             }
 
             .timeline-item {
-                padding: 5px;
-                min-width: 70px;
+                padding: 15px;
+                min-width: 120px;
             }
 
             .timeline-emoji {
-                font-size: 2em;
+                font-size: 3.5em;
             }
 
             .timeline-energy {
-                font-size: 0.65em;
+                font-size: 0.9em;
             }
 
             .current-equivalence {
@@ -1140,9 +1140,9 @@
                 <p class="header-description">This tool is made for educational purposes</p>
                 <p>Help yourself to assess and visualize the consequences of dropped object</p>
             </div>
-            <img src="./logo_drop.png" alt="Logo" class="header-logo" onerror="this.style.display='none'">
         </div>
 
+            <img src="./logo_drop.png" alt="Logo" class="header-logo" onerror="this.style.display='none'">
         <div class="main-grid">
             <!-- Section Controls & Simulation (mobile: section 1) -->
             <div class="top-section section-mobile active" id="controls">
@@ -1523,6 +1523,44 @@
 
         // Create equivalence timeline
         function createTimeline() {
+        // Create mobile-friendly timeline - shows zoomed view
+        function createTimelineForMobile(energy) {
+            const track = document.getElementById('timelineTrack');
+            track.innerHTML = '';
+            
+            // Find current index
+            let currentIndex = 0;
+            for (let i = 0; i < EQUIVALENCES.length; i++) {
+                if (energy <= EQUIVALENCES[i].maxEnergy) {
+                    currentIndex = i;
+                    break;
+                }
+            }
+            
+            // Show: 2 before, current, 2 after (total 5 items max)
+            const startIndex = Math.max(0, currentIndex - 2);
+            const endIndex = Math.min(EQUIVALENCES.length - 1, currentIndex + 2);
+            
+            // Add items
+            for (let i = startIndex; i <= endIndex; i++) {
+                const equiv = EQUIVALENCES[i];
+                const item = document.createElement('div');
+                item.className = 'timeline-item' + (i === currentIndex ? ' active' : '');
+                item.innerHTML = `
+                    <span class="timeline-emoji">${equiv.icon}</span>
+                    <span class="timeline-energy">${equiv.maxEnergy === Infinity ? '150+' : equiv.maxEnergy}J</span>
+                `;
+                item.title = equiv.text;
+                track.appendChild(item);
+                
+                if (i === currentIndex) {
+                    setTimeout(() => {
+                        item.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                    }, 100);
+                }
+            }
+        }
+
             const track = document.getElementById('timelineTrack');
             track.innerHTML = '';
             
@@ -1540,6 +1578,12 @@
 
         // Update timeline marker position
         function updateTimeline(energy) {
+            const isMobilePortrait = window.innerWidth <= 768;
+            if (isMobilePortrait) {
+                createTimelineForMobile(energy);
+                return;
+            }
+            
             const track = document.getElementById('timelineTrack');
             const marker = document.getElementById('currentMarker');
             const items = track.querySelectorAll('.timeline-item');
@@ -1781,6 +1825,7 @@
             updateDisplay();
         });
 
+        // Initialization
 
         // Swipe handling for timeline
         let touchStartX = 0;
@@ -1805,15 +1850,12 @@
             if (Math.abs(diff) > swipeThreshold) {
                 const scrollAmount = 100;
                 if (diff > 0) {
-                    // Swipe left - scroll right
                     timelineContainer.scrollLeft += scrollAmount;
                 } else {
-                    // Swipe right - scroll left
                     timelineContainer.scrollLeft -= scrollAmount;
                 }
             }
         }
-        // Initialization
         createPresets();
         createTimeline();
         updateHeightScale();
