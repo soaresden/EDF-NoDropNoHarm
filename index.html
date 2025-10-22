@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Falling Object Impact Simulator</title>
+    <title>Dropped Object Impact Simulator</title>
     <style>
         * {
             margin: 0;
@@ -114,18 +114,20 @@
             justify-content: center;
             gap: 30px;
             min-height: 140px;
+            flex-wrap: wrap;
         }
 
         .header-logo {
             max-height: 100%;
-            height: 100px;
-            max-width: 250px;
+            height: 140px;
+            max-width: 280px;
             object-fit: contain;
         }
 
         .header-content {
             flex: 1;
             max-width: 600px;
+            min-width: 200px;
         }
 
         .header h1 {
@@ -228,907 +230,618 @@
         }
 
         .control-group {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 15px;
-            border: 2px solid #e9ecef;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
 
         .control-group label {
-            display: block;
-            font-weight: bold;
-            color: #495057;
-            margin-bottom: 10px;
-            font-size: 1.1em;
+            font-weight: 600;
+            color: #333;
+            font-size: 0.95em;
         }
 
         .control-group input[type="range"] {
             width: 100%;
             height: 8px;
             border-radius: 5px;
-            background: #dee2e6;
+            background: linear-gradient(to right, #e74c3c, #f39c12, #2ecc71);
             outline: none;
             -webkit-appearance: none;
+            cursor: pointer;
         }
 
         .control-group input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
-            width: 24px;
-            height: 24px;
+            width: 20px;
+            height: 20px;
             border-radius: 50%;
             background: #00A8E9;
             cursor: pointer;
-            transition: all 0.3s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
 
-        .control-group input[type="range"]::-webkit-slider-thumb:hover {
-            transform: scale(1.2);
-            background: #000E47;
-        }
-
-        .weight-inputs {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            margin-top: 10px;
-        }
-
-        .weight-input-field {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-
-        .weight-input-field label {
-            font-size: 0.85em;
-            color: #6c757d;
-            font-weight: normal;
-        }
-
-        .weight-input-field input[type="number"] {
-            padding: 8px;
-            border: 2px solid #dee2e6;
-            border-radius: 8px;
-            font-size: 1em;
-            font-weight: bold;
-            color: #00A8E9;
-            text-align: center;
-        }
-
-        .weight-input-field input[type="number"]:focus {
-            outline: none;
-            border-color: #00A8E9;
-        }
-
-        .presets-section {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 15px;
-            border: 2px solid #e9ecef;
-        }
-
-        .presets-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .control-group input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #00A8E9;
             cursor: pointer;
-            user-select: none;
-        }
-
-        .presets-header h3 {
-            font-size: 1em;
-            color: #495057;
-            margin: 0;
-        }
-
-        .collapse-icon {
-            font-size: 1.2em;
-            transition: transform 0.3s;
-            color: #00A8E9;
-        }
-
-        .collapse-icon.collapsed {
-            transform: rotate(-90deg);
-        }
-
-        .presets-content {
-            max-height: 400px;
-            overflow: hidden;
-            transition: max-height 0.3s ease;
-            margin-top: 15px;
-        }
-
-        .presets-content.collapsed {
-            max-height: 0;
-            margin-top: 0;
-        }
-
-        .presets-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-        }
-
-        .preset-btn {
-            background: white;
-            border: 2px solid #dee2e6;
-            padding: 12px;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.3s;
-            text-align: center;
-        }
-
-        .preset-btn:hover {
-            border-color: #00A8E9;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-
-        .preset-btn.active {
-            border-color: #00A8E9;
-            background: #e6f7ff;
-        }
-
-        .preset-icon {
-            font-size: 1.8em;
-            margin-bottom: 5px;
-        }
-
-        .preset-name {
-            font-weight: bold;
-            font-size: 0.9em;
-            color: #495057;
-        }
-
-        .preset-weight {
-            font-size: 0.8em;
-            color: #6c757d;
+            border: none;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
 
         .value-display {
-            font-size: 2em;
+            font-size: 1.2em;
             font-weight: bold;
             color: #00A8E9;
             text-align: center;
-            margin-top: 10px;
+            padding: 10px;
+            background: #f0f8ff;
+            border-radius: 8px;
         }
 
-        .btn-simulate {
-            background: linear-gradient(135deg, #00A8E9 0%, #000E47 100%);
-            color: white;
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            flex: 1;
+            min-width: 80px;
+            padding: 12px 20px;
             border: none;
-            padding: 15px 40px;
-            font-size: 1.2em;
+            border-radius: 8px;
             font-weight: bold;
-            border-radius: 50px;
             cursor: pointer;
             transition: all 0.3s;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
-
-        .btn-simulate:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-        }
-
-        .btn-simulate:active {
-            transform: translateY(0);
-        }
-
-        .visualization {
-            position: relative;
-            background: linear-gradient(180deg, #e3f2fd 0%, #ffffff 100%);
-            border-radius: 15px;
-            border: 3px solid #e9ecef;
-            height: 500px;
-            overflow: hidden;
-        }
-
-        .height-references-container {
-            position: absolute;
-            top: 0;
-            right: 0;
-            bottom: 0;
-            left: 0;
-            pointer-events: none;
-            z-index: 5;
-        }
-
-        .height-reference {
-            position: absolute;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            opacity: 0.8;
-            transition: all 0.3s;
-            pointer-events: auto;
-        }
-
-        .height-reference:hover {
-            opacity: 1;
-            transform: translateX(-5px);
-        }
-
-        .reference-line-horizontal {
-            width: 50px;
-            height: 2px;
-            background: #6c757d;
-        }
-
-        .reference-icon {
-            font-size: 3em;
-            filter: drop-shadow(2px 2px 3px rgba(0,0,0,0.3));
-        }
-
-        .reference-label {
-            font-size: 0.75em;
-            font-weight: bold;
-            color: #495057;
-            text-align: center;
-            background: rgba(255,255,255,0.95);
-            padding: 3px 8px;
-            border-radius: 6px;
-            white-space: nowrap;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-
-        .height-scale {
-            position: absolute;
-            left: 10px;
-            top: 20px;
-            bottom: 80px;
-            width: 40px;
-            border-right: 3px solid #adb5bd;
-        }
-
-        .scale-mark {
-            position: absolute;
-            right: 5px;
-            font-size: 0.8em;
-            color: #6c757d;
-        }
-
-        .falling-object {
-            position: absolute;
-            left: 30%;
-            transform: translateX(-50%);
-            width: 60px;
-            height: 60px;
-            background: #f5576c;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2em;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            transition: top 0.05s linear;
-        }
-
-        .ground {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 80px;
-            background: #8b4513;
-            border-top: 4px solid #654321;
-        }
-
-        .person {
-            position: absolute;
-            bottom: 80px;
-            left: 30%;
-            transform: translateX(-50%);
-            font-size: 3em;
-            z-index: 10;
-        }
-
-        .impact-effect {
-            position: absolute;
-            bottom: 140px;
-            left: 30%;
-            transform: translateX(-50%);
-            font-size: 3em;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-
-        .impact-effect.show {
-            opacity: 1;
-        }
-
-        .speech-bubble {
-            position: absolute;
-            bottom: 200px;
-            left: 30%;
-            transform: translateX(-50%);
-            background: white;
-            border: 3px solid #000;
-            border-radius: 20px;
-            padding: 15px 20px;
-            font-size: 1.2em;
-            font-weight: bold;
-            color: #000;
-            white-space: nowrap;
-            max-width: 300px;
-            text-align: center;
-            opacity: 0;
-            transition: opacity 0.3s;
-            z-index: 15;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-        }
-
-        .speech-bubble::after {
-            content: '';
-            position: absolute;
-            bottom: -20px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 0;
-            height: 0;
-            border-left: 15px solid transparent;
-            border-right: 15px solid transparent;
-            border-top: 20px solid #000;
-        }
-
-        .speech-bubble::before {
-            content: '';
-            position: absolute;
-            bottom: -15px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 0;
-            height: 0;
-            border-left: 12px solid transparent;
-            border-right: 12px solid transparent;
-            border-top: 17px solid white;
-            z-index: 1;
-        }
-
-        .speech-bubble.show {
-            opacity: 1;
-            animation: popIn 0.3s ease-out;
-        }
-
-        @keyframes popIn {
-            0% {
-                transform: translateX(-50%) scale(0.5);
-                opacity: 0;
-            }
-            50% {
-                transform: translateX(-50%) scale(1.1);
-            }
-            100% {
-                transform: translateX(-50%) scale(1);
-                opacity: 1;
-            }
-        }
-
-        .warning {
-            background: #fff3cd;
-            border: 2px solid #ffc107;
-            border-radius: 10px;
-            padding: 15px;
-            text-align: center;
-            color: #856404;
-            font-weight: bold;
             font-size: 0.9em;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #00A8E9, #0088CC);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 168, 233, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+            border: 2px solid #00A8E9;
+        }
+
+        .btn-secondary:hover {
+            background: #00A8E9;
+            color: white;
+        }
+
+        .preset-button {
+            padding: 8px;
+            background: #f0f0f0;
+            border: 2px solid #00A8E9;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            color: #333;
+            transition: all 0.3s;
+            font-size: 0.85em;
+        }
+
+        .preset-button:hover {
+            background: #00A8E9;
+            color: white;
+            transform: translateY(-2px);
         }
 
         .right-column {
             display: flex;
             flex-direction: column;
-            gap: 0;
+            gap: 20px;
         }
 
-        .equivalence-timeline-section {
-            background: #f8f9fa;
-            padding: 30px;
-            border-radius: 15px;
-            margin-bottom: 20px;
-        }
-
-        .equivalence-timeline-section h2 {
-            color: #495057;
-            margin-bottom: 25px;
-            text-align: center;
-            font-size: 1.8em;
-        }
-
-        .timeline-container {
-            position: relative;
-            margin-bottom: 40px;
-        }
-
-        .timeline-track {
-            display: flex;
-            align-items: flex-start;
-            gap: 5px;
-            background: linear-gradient(90deg, 
-                #28a745 0%, 
-                #28a745 10%, 
-                #ffc107 10%, 
-                #ffc107 30%, 
-                #fd7e14 30%, 
-                #fd7e14 60%, 
-                #dc3545 60%, 
-                #dc3545 100%);
-            padding: 15px;
-            border-radius: 15px;
-            overflow-x: auto;
-            overflow-y: hidden;
-            position: relative;
-            min-height: 120px;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        .timeline-item {
-            flex: 0 0 auto;
-            text-align: center;
-            padding: 10px;
-            transition: all 0.3s;
-            cursor: pointer;
-            border-radius: 10px;
-        }
-
-        .timeline-item:hover {
-            background: rgba(255, 255, 255, 0.3);
-            transform: scale(1.1);
-        }
-
-        .timeline-item.active {
-            background: rgba(255, 255, 255, 0.5);
-            transform: scale(1.15);
-            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
-        }
-
-        .timeline-emoji {
-            font-size: 3em;
-            margin-bottom: 5px;
-            display: block;
-        }
-
-        .timeline-energy {
-            font-size: 0.75em;
-            font-weight: bold;
-            color: #fff;
-            background: rgba(0,0,0,0.4);
-            padding: 3px 8px;
+        .visualization-wrapper {
+            background: #f9f9f9;
             border-radius: 12px;
-            white-space: nowrap;
+            overflow: hidden;
+            border: 2px solid #e0e0e0;
         }
 
-        .current-marker {
+        #visualization {
+            position: relative;
+            height: 600px;
+            background: linear-gradient(to bottom, #e3f2fd 0%, #fff9c4 85%, #8d6e63 85%, #8d6e63 100%);
+            overflow: hidden;
+        }
+
+        .scale-track {
             position: absolute;
-            bottom: -35px;
             left: 0;
-            transition: left 0.3s ease;
-            text-align: center;
+            top: 0;
+            width: 50px;
+            height: 100%;
+            background: rgba(0,0,0,0.05);
+            border-right: 1px solid #ccc;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+        }
+
+        .scale-mark {
+            padding: 0 5px;
+            font-size: 0.7em;
+            color: #666;
+            text-align: right;
+            font-weight: bold;
+            height: 20px;
+            display: flex;
+            align-items: flex-end;
+        }
+
+        .falling-object {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 3em;
+            z-index: 5;
+        }
+
+        @keyframes fall {
+            from {
+                top: var(--start-height);
+            }
+            to {
+                top: calc(100% - 80px);
+            }
+        }
+
+        .reference {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            position: absolute;
+            right: 80px;
+            font-size: 0.85em;
+            color: #666;
+        }
+
+        .reference-icon {
+            font-size: 1.5em;
+        }
+
+        .ground {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 80px;
+            background: linear-gradient(to bottom, #8d6e63, #6d4c41);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .person {
+            font-size: 3em;
+            animation: none;
+        }
+
+        .impact-effect {
+            position: absolute;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 4em;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
             z-index: 10;
         }
 
-        .marker-arrow {
-            font-size: 2em;
-            color: #00A8E9;
-            animation: bounce 1s infinite;
+        .impact-effect.show {
+            opacity: 1;
+            animation: impact-burst 0.6s ease-out;
         }
 
-        .marker-label {
-            font-size: 0.75em;
-            font-weight: bold;
-            color: #00A8E9;
-            white-space: nowrap;
+        @keyframes impact-burst {
+            0% {
+                transform: translateX(-50%) scale(0);
+                opacity: 1;
+            }
+            100% {
+                transform: translateX(-50%) scale(1.5);
+                opacity: 0;
+            }
         }
 
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-5px); }
-        }
-
-        .current-equivalence {
-            background: linear-gradient(135deg, #00A8E9 0%, #000E47 100%);
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
-        }
-
-        .equivalence-display-large {
+        .speech-bubble {
+            position: absolute;
+            bottom: 150px;
+            left: 50%;
+            transform: translateX(-50%);
             background: white;
-            padding: 30px;
-            border-radius: 15px;
-            display: flex;
-            align-items: center;
-            gap: 30px;
-            min-height: 100px;
+            border: 2px solid #333;
+            border-radius: 12px;
+            padding: 10px 15px;
+            font-size: 0.85em;
+            max-width: 150px;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 11;
+            white-space: pre-wrap;
+            word-break: break-word;
         }
 
-        .equivalence-icon-large {
-            font-size: 5em;
-            flex-shrink: 0;
+        .speech-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-top: 8px solid white;
         }
 
-        .equivalence-text-large {
-            font-size: 1.5em;
+        .speech-bubble.show {
+            opacity: 1;
+        }
+
+        .analysis-section {
+            background: #f9f9f9;
+            border-radius: 12px;
+            padding: 20px;
+            border: 2px solid #e0e0e0;
+        }
+
+        .analysis-title {
+            font-size: 1.2em;
             font-weight: bold;
-            color: #495057;
-            line-height: 1.4;
-        }
-
-        .results {
-            background: #f8f9fa;
-            padding: 25px;
-            border-radius: 15px;
-        }
-
-        .results h2 {
-            color: #495057;
             margin-bottom: 15px;
-            text-align: center;
+            color: #333;
         }
 
-        .energy-display {
-            text-align: center;
-            font-size: 1.8em;
-            font-weight: bold;
-            color: #00A8E9;
+        .damage-cards {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
             margin-bottom: 20px;
         }
 
-        .damage-levels {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 15px;
-        }
-
         .damage-card {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
+            padding: 15px;
+            border-radius: 8px;
             text-align: center;
-            border: 3px solid transparent;
+            border: 2px solid #ddd;
             transition: all 0.3s;
+            cursor: default;
         }
 
         .damage-card.active {
             transform: scale(1.05);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            border-color: #333;
         }
 
-        .damage-card.slight { border-color: #28a745; }
-        .damage-card.slight.active { background: #d4edda; }
+        .damage-card.slight {
+            background: #c8e6c9;
+            color: #2e7d32;
+        }
 
-        .damage-card.minor { border-color: #ffc107; }
-        .damage-card.minor.active { background: #fff3cd; }
+        .damage-card.minor {
+            background: #fff9c4;
+            color: #f57f17;
+        }
 
-        .damage-card.major { border-color: #fd7e14; }
-        .damage-card.major.active { background: #ffe5d0; }
+        .damage-card.major {
+            background: #ffccbc;
+            color: #d84315;
+        }
 
-        .damage-card.fatality { border-color: #dc3545; }
-        .damage-card.fatality.active { background: #f8d7da; }
+        .damage-card.fatality {
+            background: #ffcdd2;
+            color: #c62828;
+        }
 
-        .damage-icon {
+        .damage-card.active.slight {
+            border-color: #2e7d32;
+        }
+
+        .damage-card.active.minor {
+            border-color: #f57f17;
+        }
+
+        .damage-card.active.major {
+            border-color: #d84315;
+        }
+
+        .damage-card.active.fatality {
+            border-color: #c62828;
+        }
+
+        .card-label {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .card-description {
+            font-size: 0.8em;
+            line-height: 1.3;
+        }
+
+        .equivalence-display-large {
+            text-align: center;
+            padding: 20px;
+            border: 2px solid #00A8E9;
+            border-radius: 8px;
+            background: #f0f8ff;
+        }
+
+        .equivalence-icon-large {
             font-size: 3em;
             margin-bottom: 10px;
         }
 
-        .damage-title {
+        .equivalence-text-large {
             font-weight: bold;
-            font-size: 1.2em;
-            margin-bottom: 10px;
+            color: #333;
+            line-height: 1.4;
         }
 
-        .damage-description {
-            font-size: 0.9em;
-            color: #6c757d;
-            line-height: 1.6;
+        .timeline-container {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: thin;
+            position: relative;
         }
 
-        .energy-threshold {
-            font-size: 0.8em;
-            color: #868e96;
-            margin-top: 8px;
+        .timeline-container::-webkit-scrollbar {
+            height: 6px;
         }
 
-        .animate-fall {
-            animation: fall linear;
+        .timeline-container::-webkit-scrollbar-track {
+            background: #f0f0f0;
+            border-radius: 10px;
         }
 
-        @keyframes fall {
-            from { top: var(--start-height); }
-            to { top: calc(100% - 140px); }
+        .timeline-container::-webkit-scrollbar-thumb {
+            background: #00A8E9;
+            border-radius: 10px;
         }
 
-        /* Responsive - Tablette */
-        @media (max-width: 1200px) {
-            .top-section {
-                grid-template-columns: 1fr;
-            }
-            .damage-levels {
-                grid-template-columns: 1fr 1fr;
-            }
+        .timeline-track {
+            display: flex;
+            gap: 15px;
+            padding: 20px;
+            min-width: min-content;
+            position: relative;
         }
 
-        /* Responsive - Mobile */
+        .timeline-item {
+            flex: 0 0 auto;
+            width: 120px;
+            padding: 15px;
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .timeline-item:hover {
+            border-color: #00A8E9;
+            transform: translateY(-2px);
+        }
+
+        .timeline-item.active {
+            background: #00A8E9;
+            color: white;
+            border-color: #00A8E9;
+        }
+
+        .timeline-value {
+            font-size: 0.75em;
+            margin-bottom: 5px;
+            opacity: 0.7;
+        }
+
+        .timeline-description {
+            font-weight: bold;
+            font-size: 0.85em;
+        }
+
+        .timeline-marker {
+            position: absolute;
+            bottom: 0;
+            height: 3px;
+            background: #00A8E9;
+            width: 80px;
+            left: 20px;
+            border-radius: 2px;
+            transition: left 0.3s ease;
+        }
+
+        /* Mobile responsive */
         @media (max-width: 768px) {
-            /* Afficher la navigation mobile */
             .mobile-nav {
                 display: block;
-            }
-
-            /* Cacher le header desktop */
-            .header {
-                display: none;
+                margin-top: 0;
+                padding-top: 60px;
             }
 
             body {
                 padding: 0;
-                padding-top: 120px;
+                padding-top: 60px;
             }
 
             .container {
                 border-radius: 0;
-                box-shadow: none;
+                margin-top: -60px;
+                margin-bottom: 0;
+            }
+
+            .header {
+                padding: 20px;
+                min-height: auto;
+                gap: 15px;
+                flex-direction: column;
+            }
+
+            .header-logo {
+                height: 100px;
+                max-width: 200px;
+            }
+
+            .header h1 {
+                font-size: 1.5em;
+            }
+
+            .header p {
+                font-size: 0.9em;
             }
 
             .main-grid {
-                padding: 10px;
-                gap: 15px;
-            }
-
-            /* Système de sections */
-            .section-mobile {
-                display: none;
-                animation: fadeIn 0.3s ease;
-            }
-
-            .section-mobile.active {
-                display: block;
-            }
-
-            @keyframes fadeIn {
-                from {
-                    opacity: 0;
-                    transform: translateY(20px);
-                }
-                to {
-                    opacity: 1;
-                    transform: translateY(0);
-                }
+                padding: 20px;
+                gap: 20px;
             }
 
             .top-section {
                 grid-template-columns: 1fr;
-                gap: 15px;
+                gap: 20px;
             }
 
-            .control-group {
-                padding: 15px;
-                margin-bottom: 15px;
+            #visualization {
+                height: 350px;
             }
 
-            .control-group label {
-                font-size: 1em;
-            }
-
-            .value-display {
-                font-size: 1.5em;
-            }
-
-            .presets-grid {
-                grid-template-columns: repeat(3, 1fr);
-                gap: 6px;
-            }
-
-            .preset-btn {
-                padding: 8px 4px;
-            }
-
-            .preset-icon {
-                font-size: 1.5em;
-                margin-bottom: 2px;
-            }
-
-            .preset-name {
-                font-size: 0.65em;
-                line-height: 1.1;
-            }
-
-            .preset-weight {
-                font-size: 0.6em;
-                margin-top: 2px;
-            }
-
-            .visualization {
-                height: 400px;
-                margin-bottom: 15px;
-            }
-
-            .height-reference {
-                right: 10px !important;
-            }
-
-            .reference-icon {
-                font-size: 2em;
-            }
-
-            .reference-label {
-                font-size: 0.6em;
-                padding: 2px 4px;
-            }
-
-            .reference-line-horizontal {
-                width: 30px;
-            }
-
-            .btn-simulate {
-                width: 100%;
-                padding: 15px;
-                font-size: 1.1em;
-                margin-bottom: 15px;
-            }
-
-            .warning {
-                font-size: 0.85em;
-                padding: 12px;
-            }
-
-            .equivalence-timeline-section {
-                padding: 15px;
-                margin-bottom: 15px;
-            }
-
-            .equivalence-timeline-section h2 {
-                font-size: 1.3em;
-                margin-bottom: 15px;
-            }
-
-            .timeline-track {
-                padding: 10px;
-                min-height: 90px;
-            }
-
-            .timeline-item {
-                padding: 5px;
-                min-width: 70px;
-            }
-
-            .timeline-emoji {
-                font-size: 2em;
-            }
-
-            .timeline-energy {
-                font-size: 0.65em;
-            }
-
-            .current-equivalence {
+            .analysis-section {
                 padding: 15px;
             }
 
-            .equivalence-display-large {
-                flex-direction: column;
-                text-align: center;
-                padding: 20px;
-                gap: 15px;
-            }
-
-            .equivalence-icon-large {
-                font-size: 3.5em;
-            }
-
-            .equivalence-text-large {
-                font-size: 1.1em;
-            }
-
-            .results {
-                padding: 15px;
-            }
-
-            .results h2 {
-                font-size: 1.3em;
-            }
-
-            .energy-display {
-                font-size: 1.5em;
-                padding: 15px;
-                margin-bottom: 15px;
-            }
-
-            .damage-levels {
-                grid-template-columns: 1fr;
+            .damage-cards {
+                grid-template-columns: 1fr 1fr;
                 gap: 10px;
             }
 
             .damage-card {
-                padding: 15px;
-            }
-
-            .damage-icon {
-                font-size: 2.5em;
-            }
-
-            .damage-title {
-                font-size: 1.1em;
-            }
-
-            .damage-description {
+                padding: 10px;
                 font-size: 0.85em;
             }
 
-            .energy-threshold {
+            .timeline-track {
+                padding: 15px;
+                gap: 10px;
+            }
+
+            .timeline-item {
+                width: 100px;
+                padding: 10px;
                 font-size: 0.75em;
             }
 
             .falling-object {
-                width: 50px;
-                height: 50px;
-                font-size: 1.8em;
-                left: 30%;
+                font-size: 2em;
             }
 
             .person {
-                font-size: 2.5em;
-                left: 30%;
+                font-size: 2em;
             }
 
-            .impact-effect {
-                font-size: 2.5em;
-                bottom: 130px;
-                left: 30%;
-            }
-
-            .speech-bubble {
-                font-size: 0.9em;
-                padding: 10px 15px;
-                bottom: 180px;
-                left: 30%;
-            }
-
-            .speech-bubble::after {
-                border-left: 10px solid transparent;
-                border-right: 10px solid transparent;
-                border-top: 15px solid #000;
-                bottom: -15px;
-            }
-
-            .speech-bubble::before {
-                border-left: 8px solid transparent;
-                border-right: 8px solid transparent;
-                border-top: 12px solid white;
-                bottom: -11px;
-            }
-
-            .florent-label {
+            .reference {
                 font-size: 0.7em;
-                padding: 3px 8px;
-                bottom: 30px;
+                right: 60px;
             }
 
-            .lightning-easter-egg {
+            .scale-track {
+                width: 40px;
+            }
+
+            .scale-mark {
+                font-size: 0.6em;
+            }
+
+            .control-group label {
                 font-size: 0.9em;
+            }
+
+            .value-display {
+                font-size: 1em;
+            }
+
+            .analysis-title {
+                font-size: 1em;
+            }
+
+            .equivalence-icon-large {
+                font-size: 2em;
+            }
+
+            .equivalence-text-large {
+                font-size: 0.9em;
+            }
+
+            .btn {
+                padding: 10px 15px;
+                font-size: 0.85em;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header {
+                padding: 15px;
+            }
+
+            .header-logo {
+                height: 80px;
+                max-width: 150px;
+            }
+
+            .header h1 {
+                font-size: 1.2em;
+            }
+
+            .main-grid {
+                padding: 15px;
+                gap: 15px;
+            }
+
+            #visualization {
+                height: 280px;
+            }
+
+            .damage-cards {
+                grid-template-columns: 1fr;
+            }
+
+            .timeline-item {
+                width: 90px;
             }
         }
     </style>
 </head>
 <body>
-    <!-- Navigation mobile (visible uniquement sur mobile) -->
-    <div class="mobile-nav">
+    <!-- Mobile Navigation -->
+    <div class="mobile-nav" id="mobileNav">
         <div class="header-logos-mobile">
-            <img src="./logo_cou.png" alt="Logo COU" class="header-logo-mobile" onerror="this.style.display='none'">
-            <img src="./logo_drop.png" alt="Logo Drop" class="header-logo-mobile" onerror="this.style.display='none'">
+            <img src="./logo_cou.png" alt="Logo" class="header-logo-mobile" onerror="this.style.display='none'">
+            <img src="./logo_drop.png" alt="Logo" class="header-logo-mobile" onerror="this.style.display='none'">
         </div>
-        <div class="nav-title">⚠️ Falling Object Simulator <span class="lightning-easter-egg" onclick="triggerLightning()">⚡</span></div>
-        <div class="nav-buttons">
-            <button class="nav-btn active" onclick="showSection('controls')">⚙️ Controls</button>
-            <button class="nav-btn" onclick="showSection('impact')">🔥 Impact</button>
-            <button class="nav-btn" onclick="showSection('results')">📊 Results</button>
-        </div>
+        <div class="nav-title">Falling Object Impact</div>
+        <div class="nav-buttons" id="navButtons"></div>
     </div>
 
+    <!-- Main Container -->
     <div class="container">
-        <!-- Header desktop (caché sur mobile) -->
+        <!-- Header -->
         <div class="header">
             <img src="./logo_cou.png" alt="Logo" class="header-logo" onerror="this.style.display='none'">
             <div class="header-content">
@@ -1136,434 +849,272 @@
                 <p>Understand the dangers of objects at height</p>
                 <p class="header-description">This tool is made for educational purposes. Try to see the effects of usual objects falling on someone from different heights!</p>
             </div>
-            <img src="./logo_drop.png" alt="Logo" class="header-logo" width="400" height="400" onerror="this.style.display='none'">
+            <img src="./logo_drop.png" alt="Logo" class="header-logo" onerror="this.style.display='none'">
         </div>
 
+        <!-- Main Content -->
         <div class="main-grid">
-            <!-- Section Controls & Simulation (mobile: section 1) -->
-            <div class="top-section section-mobile active" id="controls">
+            <!-- Top Section: Controls and Visualization -->
+            <div class="top-section">
+                <!-- Left Column: Controls -->
                 <div class="left-column">
                     <div class="controls">
+                        <!-- Height Control -->
                         <div class="control-group">
-                            <label>💪 Object Weight</label>
-                            <input type="range" id="weight" min="0.01" max="150" step="0.1" value="2">
-                            <div class="weight-inputs">
-                                <div class="weight-input-field">
-                                    <label>Kilograms</label>
-                                    <input type="number" id="weightKg" min="0.01" max="150" step="0.1" value="2.0">
-                                </div>
-                                <div class="weight-input-field">
-                                    <label>Grams</label>
-                                    <input type="number" id="weightGrams" min="10" max="150000" step="10" value="2000">
-                                </div>
-                            </div>
+                            <label for="heightInput">Height (m)</label>
+                            <input type="range" id="heightInput" min="1" max="100" value="10" step="0.5">
+                            <div class="value-display" id="heightValue">10.0 m</div>
                         </div>
 
-                        <div class="presets-section">
-                            <div class="presets-header" onclick="togglePresets()">
-                                <h3>🔧 Common Objects</h3>
-                                <span class="collapse-icon collapsed" id="collapseIcon">▼</span>
-                            </div>
-                            <div class="presets-content collapsed" id="presetsContent">
-                                <div class="presets-grid" id="presetsGrid"></div>
-                            </div>
-                        </div>
-
+                        <!-- Object Weight Control -->
                         <div class="control-group">
-                            <label>📏 Drop Height (m)</label>
-                            <input type="range" id="height" min="0.5" max="100" step="0.5" value="20">
-                            <div class="value-display" id="heightValue">20.0 m</div>
+                            <label for="weightInput">Object Weight (kg)</label>
+                            <input type="range" id="weightInput" min="0.1" max="50" value="5" step="0.1">
+                            <div class="value-display" id="weightValue">5.0 kg</div>
                         </div>
 
-                        <button class="btn-simulate" onclick="simulateFall()">
-                            🚀 Run Simulation
-                        </button>
-
-                        <div class="warning">
-                            ⚠️ Even small objects can cause serious injuries!
+                        <!-- Energy Display -->
+                        <div class="control-group">
+                            <label>Energy</label>
+                            <div class="value-display" id="energyDisplay">Energy: 490.5 J</div>
                         </div>
+
+                        <!-- Action Buttons -->
+                        <div class="button-group">
+                            <button class="btn btn-primary" onclick="simulateFall()">Drop Object</button>
+                            <button class="btn btn-secondary" onclick="resetSimulation()">Reset</button>
+                        </div>
+
+                        <!-- Presets -->
+                        <div class="control-group">
+                            <label>Quick Presets</label>
+                            <div id="presetsContainer" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Impact Analysis Section -->
+                    <div class="analysis-section">
+                        <div class="analysis-title">Impact Analysis</div>
+                        <div class="damage-cards">
+                            <div class="damage-card slight" id="slight">
+                                <div class="card-label">Slight</div>
+                                <div class="card-description">Minor injuries</div>
+                            </div>
+                            <div class="damage-card minor" id="minor">
+                                <div class="card-label">Minor</div>
+                                <div class="card-description">Moderate injuries</div>
+                            </div>
+                            <div class="damage-card major" id="major">
+                                <div class="card-label">Major</div>
+                                <div class="card-description">Severe injuries</div>
+                            </div>
+                            <div class="damage-card fatality" id="fatality">
+                                <div class="card-label">Fatality</div>
+                                <div class="card-description">Fatal outcome</div>
+                            </div>
+                        </div>
+                        <div class="equivalence-display-large" id="equivalenceDisplayLarge"></div>
                     </div>
                 </div>
 
+                <!-- Right Column: Visualization -->
                 <div class="right-column">
-                    <div class="visualization" id="visualization">
-                        <div class="height-scale" id="heightScale"></div>
-                        <!-- Height references container -->
-                        <div class="height-references-container" id="heightReferencesContainer">
-                            <div class="height-reference" id="ref-arc">
-                                <div class="reference-line-horizontal"></div>
-                                <div class="reference-icon">🗼</div>
-                                <div class="reference-label">Arc Triomphe<br>50m</div>
+                    <div class="visualization-wrapper">
+                        <div id="visualization">
+                            <div class="scale-track" id="heightScale"></div>
+                            <div class="falling-object" id="fallingObject">📦</div>
+                            <div class="ground">
+                                <div class="person" id="person">🧍</div>
                             </div>
-                            <div class="height-reference" id="ref-crane">
-                                <div class="reference-line-horizontal"></div>
-                                <div class="reference-icon">🏗️</div>
-                                <div class="reference-label">Crane<br>30m</div>
+                            <div class="impact-effect" id="impactEffect">💥</div>
+                            <div class="speech-bubble" id="speechBubble"></div>
+                            <div class="reference" id="ref-car">
+                                <span class="reference-icon">🚗</span>
+                                <span>Car (1.5m)</span>
                             </div>
-                            <div class="height-reference" id="ref-building">
-                                <div class="reference-line-horizontal"></div>
-                                <div class="reference-icon">🏢</div>
-                                <div class="reference-label">Building<br>10m</div>
+                            <div class="reference" id="ref-truck">
+                                <span class="reference-icon">🚚</span>
+                                <span>Truck (3.5m)</span>
                             </div>
-                            <div class="height-reference" id="ref-truck">
-                                <div class="reference-line-horizontal"></div>
-                                <div class="reference-icon">🚚</div>
-                                <div class="reference-label">Truck<br>3.5m</div>
+                            <div class="reference" id="ref-building">
+                                <span class="reference-icon">🏢</span>
+                                <span>Building (10m)</span>
                             </div>
-                            <div class="height-reference" id="ref-car">
-                                <div class="reference-line-horizontal"></div>
-                                <div class="reference-icon">🚗</div>
-                                <div class="reference-label">Car<br>1.5m</div>
+                            <div class="reference" id="ref-crane">
+                                <span class="reference-icon">🏗️</span>
+                                <span>Crane (30m)</span>
+                            </div>
+                            <div class="reference" id="ref-arc">
+                                <span class="reference-icon">✈️</span>
+                                <span>Plane (50m)</span>
                             </div>
                         </div>
-                        <div class="falling-object" id="fallingObject">🌻</div>
-                        <div class="florent-label">👋 Meet Florent!</div>
-                        <div class="person" id="person">🧍</div>
-                        <div class="impact-effect" id="impactEffect">💥</div>
-                        <div class="speech-bubble" id="speechBubble"></div>
-                        <div class="ground"></div>
                     </div>
                 </div>
             </div>
 
-            <!-- Section Impact Force (mobile: section 2) -->
-            <div class="equivalence-timeline-section section-mobile" id="impact">
-                <h2>🔥 Impact Force Scale</h2>
-                <div class="timeline-container">
-                    <div class="timeline-track" id="timelineTrack">
-                        <!-- Timeline items will be generated here -->
-                    </div>
-                    <div class="current-marker" id="currentMarker">
-                        <div class="marker-arrow">▼</div>
-                        <div class="marker-label">YOU ARE HERE</div>
-                    </div>
-                </div>
-                <div class="current-equivalence">
-                    <div class="equivalence-display-large" id="equivalenceDisplayLarge">
-                        <div class="equivalence-icon-large">🤔</div>
-                        <div class="equivalence-text-large">Adjust parameters to see equivalent force</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Section Results (mobile: section 3) -->
-            <div class="results section-mobile" id="results">
-                <h2>📊 Impact Analysis</h2>
-                <div class="energy-display" id="energyDisplay">
-                    Energy: 0 J
-                </div>
-
-                <div class="damage-levels">
-                    <div class="damage-card slight" id="slight">
-                        <div class="damage-icon">🩹</div>
-                        <div class="damage-title">SLIGHT</div>
-                        <div class="damage-description">📋 Clipboard<br>🍎 Apple<br></div>
-                        <div class="energy-threshold">&lt; 15 J</div>
-                    </div>
-
-                    <div class="damage-card minor" id="minor">
-                        <div class="damage-icon">🥼</div>
-                        <div class="damage-title">MINOR</div>
-                        <div class="damage-description">🔨 Hammer<br>🧱 Brick<br>👷 Hard Hat</div>
-                        <div class="energy-threshold">15-50 J</div>
-                    </div>
-
-                    <div class="damage-card major" id="major">
-                        <div class="damage-icon">👨‍🦽</div>
-                        <div class="damage-title">MAJOR</div>
-                        <div class="damage-description">🪓 Axe<br>⚙️ Engine Part<br>🪨 Large Rock</div>
-                        <div class="energy-threshold">50-150 J</div>
-                    </div>
-
-                    <div class="damage-card fatality" id="fatality">
-                        <div class="damage-icon">⚰️</div>
-                        <div class="damage-title">FATALITY</div>
-                        <div class="damage-description">🗜️ Steel Beam<br>⚓ Anchor<br>🪨 Boulder</div>
-                        <div class="energy-threshold">&gt; 150 J</div>
-                    </div>
+            <!-- Impact for Scale Section -->
+            <div class="analysis-section">
+                <div class="analysis-title">Impact for Scale</div>
+                <div class="timeline-container" id="timelineContainer">
+                    <div class="timeline-track" id="timelineTrack"></div>
+                    <div class="timeline-marker" id="timelineMarker"></div>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        const weightInput = document.getElementById('weight');
-        const weightKgInput = document.getElementById('weightKg');
-        const weightGramsInput = document.getElementById('weightGrams');
-        const heightInput = document.getElementById('height');
+        // Constants
+        const g = 9.81;
+        const THRESHOLDS = {
+            slight: 100,
+            minor: 500,
+            major: 2000
+        };
+
+        const EQUIVALENCES = [
+            { maxEnergy: 50, icon: '🪶', text: 'Like a feather touch' },
+            { maxEnergy: 100, icon: '📚', text: 'Like a textbook to the head' },
+            { maxEnergy: 300, icon: '🎾', text: 'Like a tennis serve at full force' },
+            { maxEnergy: 700, icon: '🏀', text: 'Like being hit by a thrown basketball' },
+            { maxEnergy: 1500, icon: '🥊', text: 'Like a punch from a boxer' },
+            { maxEnergy: 3000, icon: '🚗', text: 'Like being hit by a car at 5 mph' },
+            { maxEnergy: 7000, icon: '🚗💨', text: 'Like being hit by a car at 10 mph' },
+            { maxEnergy: Infinity, icon: '💥', text: 'Extreme danger - beyond safe thresholds' }
+        ];
+
+        const SPEECH_BUBBLES = {
+            slight: ['Ouch! 😣', 'That hurt!', 'Ow!'],
+            minor: ['This is bad... 😵', 'Can\'t move...', 'Help me!'],
+            major: ['Emergency!', 'Call an ambulance!', 'Help! 🆘'],
+            fatality: ['...', '☠️', '...']
+        };
+
+        // DOM elements
+        const heightInput = document.getElementById('heightInput');
+        const weightInput = document.getElementById('weightInput');
         const heightValue = document.getElementById('heightValue');
         const energyDisplay = document.getElementById('energyDisplay');
         const fallingObject = document.getElementById('fallingObject');
         const impactEffect = document.getElementById('impactEffect');
+        const speechBubble = document.getElementById('speechBubble');
         const person = document.getElementById('person');
         const heightScale = document.getElementById('heightScale');
-        const speechBubble = document.getElementById('speechBubble');
+        const timelineTrack = document.getElementById('timelineTrack');
+        const timelineMarker = document.getElementById('timelineMarker');
+        const timelineContainer = document.getElementById('timelineContainer');
+        const navButtons = document.getElementById('navButtons');
 
-        let currentWeight = 2;
-        let currentHeight = 20;
-        let isUpdating = false;
+        let currentHeight = 10;
+        let currentWeight = 5;
         let isMobile = window.innerWidth <= 768;
 
-        // Gravity constant
-        const g = 9.81;
-
-        // Speech bubble messages by damage level
-        const SPEECH_BUBBLES = {
-            slight: ["Ouch!", "That hurts!", "Ow ow ow!", "Hey, watch it!"],
-            minor: ["I need help!", "MEDIC!", "Call someone!", "This is bad!"],
-            major: ["CALL AN AMBULANCE!", "EMERGENCY!", "HELP ME NOW!", "I'M SERIOUSLY HURT!"],
-            fatality: ["RIP... 💀", "☠️", "Game Over...", "..."]
-        };
-
-        // Object presets (weight in kg)
-        const PRESETS = [
-            { name: '12mm Wrench', icon: '🔧', weight: 0.15, emoji: '🔧' },
-            { name: 'Bolt M10', icon: '🔩', weight: 0.05, emoji: '🔩' },
-            { name: 'iPhone', icon: '📱', weight: 0.2, emoji: '📱' },
-            { name: 'Safety Helmet', icon: '⛑️', weight: 0.4, emoji: '⛑️' },
-            { name: 'Flower Pot', icon: '🌻', weight: 2.0, emoji: '🌻' },
-            { name: 'Work Boot', icon: '🥾', weight: 1.2, emoji: '🥾' },
-            { name: 'Hammer', icon: '🔨', weight: 0.5, emoji: '🔨' },
-            { name: 'Screwdriver', icon: '🪛', weight: 0.2, emoji: '🪛' },
-            { name: 'Wood Plank', icon: '🪵', weight: 2.5, emoji: '🪵' },
-            { name: 'Brick', icon: '🧱', weight: 3.5, emoji: '🧱' },
-            { name: 'Water Bottle', icon: '🧴', weight: 1.0, emoji: '🧴' },
-            { name: 'Drill', icon: '⚙️', weight: 1.8, emoji: '⚙️' },
-            { name: 'Adjustable Wrench', icon: '🔧', weight: 0.35, emoji: '🔧' },
-            { name: 'Paint Can', icon: '🪣', weight: 5.0, emoji: '🪣' },
-            { name: 'Steel Pipe', icon: '🛠️', weight: 4.0, emoji: '🛠️' },
-            { name: 'Clipboard', icon: '📋', weight: 0.3, emoji: '📋' }
-        ];
-
-        // Energy thresholds (in Joules)
-        const THRESHOLDS = {
-            slight: 15,
-            minor: 50,
-            major: 150
-        };
-
-        // Relatable equivalences
-        const EQUIVALENCES = [
-            { maxEnergy: 5, icon: '🤝', text: 'A friendly tap' },
-            { maxEnergy: 10, icon: '👋', text: 'A pat on the shoulder' },
-            { maxEnergy: 15, icon: '🥊', text: 'A light punch (amateur boxing)' },
-            { maxEnergy: 30, icon: '⚾', text: 'A baseball thrown at 50 km/h' },
-            { maxEnergy: 50, icon: '🏏', text: 'A cricket bat swing' },
-            { maxEnergy: 80, icon: '⚽', text: 'A professional soccer kick' },
-            { maxEnergy: 120, icon: '🥋', text: 'A black belt karate chop' },
-            { maxEnergy: 150, icon: '🏈', text: 'A rugby tackle' },
-            { maxEnergy: 250, icon: '🐘', text: 'An elephant stepping on you' },
-            { maxEnergy: 400, icon: '🥊', text: 'A Mike Tyson uppercut' },
-            { maxEnergy: 600, icon: '🏍️', text: 'A motorcycle crash at 30 km/h' },
-            { maxEnergy: 900, icon: '🚗', text: 'A low-speed car impact' },
-            { maxEnergy: 1500, icon: '💥', text: 'A car crash at 50 km/h' },
-            { maxEnergy: Infinity, icon: '☠️', text: 'A potentially lethal force' }
-        ];
-
-        // Navigation mobile
-        function showSection(sectionId) {
-            if (!isMobile) return; // Ne fonctionne que sur mobile
-
-            // Masquer toutes les sections
-            document.querySelectorAll('.section-mobile').forEach(section => {
-                section.classList.remove('active');
-            });
-            
-            // Désactiver tous les boutons
-            document.querySelectorAll('.nav-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            
-            // Activer la section demandée
-            document.getElementById(sectionId).classList.add('active');
-            
-            // Activer le bouton correspondant
-            if (event && event.target) {
-                event.target.classList.add('active');
-            }
-            
-            // Scroll vers le haut
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        // Toggle presets collapse
-        function togglePresets() {
-            const content = document.getElementById('presetsContent');
-            const icon = document.getElementById('collapseIcon');
-            
-            content.classList.toggle('collapsed');
-            icon.classList.toggle('collapsed');
-        }
-
-        // Create preset buttons
-        function createPresets() {
-            const grid = document.getElementById('presetsGrid');
-            PRESETS.forEach((preset, index) => {
-                const btn = document.createElement('button');
-                btn.className = 'preset-btn';
-                btn.innerHTML = `
-                    <div class="preset-icon">${preset.emoji}</div>
-                    <div class="preset-name">${preset.name}</div>
-                    <div class="preset-weight">${preset.weight < 1 ? (preset.weight * 1000).toFixed(0) + 'g' : preset.weight.toFixed(1) + 'kg'}</div>
-                `;
-                btn.onclick = () => selectPreset(preset, btn);
-                grid.appendChild(btn);
-            });
-        }
-
-        // Select preset
-        function selectPreset(preset, button) {
-            document.querySelectorAll('.preset-btn').forEach(btn => btn.classList.remove('active'));
-            button.classList.add('active');
-            setWeight(preset.weight);
-            fallingObject.textContent = preset.emoji;
-        }
-
-        // Set weight from various sources
-        function setWeight(kg) {
-            if (isUpdating) return;
-            isUpdating = true;
-            
-            currentWeight = kg;
-            weightInput.value = kg;
-            weightKgInput.value = kg.toFixed(2);
-            weightGramsInput.value = Math.round(kg * 1000);
-            
-            isUpdating = false;
-            updateDisplay();
-        }
-
-        // Update weight from slider
-        weightInput.addEventListener('input', () => {
-            if (isUpdating) return;
-            setWeight(parseFloat(weightInput.value));
-            clearPresetSelection();
-        });
-
-        // Update weight from kg input
-        weightKgInput.addEventListener('input', () => {
-            if (isUpdating) return;
-            const kg = parseFloat(weightKgInput.value) || 0.01;
-            setWeight(Math.max(0.01, Math.min(150, kg)));
-            clearPresetSelection();
-        });
-
-        // Update weight from grams input
-        weightGramsInput.addEventListener('input', () => {
-            if (isUpdating) return;
-            const grams = parseFloat(weightGramsInput.value) || 10;
-            const kg = grams / 1000;
-            setWeight(Math.max(0.01, Math.min(150, kg)));
-            clearPresetSelection();
-        });
-
-        // Clear preset selection
-        function clearPresetSelection() {
-            document.querySelectorAll('.preset-btn').forEach(btn => btn.classList.remove('active'));
-            fallingObject.textContent = '🌻';
-        }
-
-        // Easter egg: Lightning strike!
+        // Lightning Easter Egg
         function triggerLightning() {
-            // Stop any ongoing animation
+            person.classList.remove('electrocuted');
+            void person.offsetWidth;
+            person.classList.add('electrocuted');
+            person.textContent = '⚡';
+            setTimeout(() => {
+                person.textContent = '🧍';
+            }, 500);
+        }
+
+        // Reset simulation
+        function resetSimulation() {
             fallingObject.style.animation = 'none';
             impactEffect.classList.remove('show');
             speechBubble.classList.remove('show');
-            
-            // Reset person
             person.textContent = '🧍';
-            person.classList.remove('electrocuted');
-            
-            // Force reflow
-            void person.offsetWidth;
-            
-            // Apply electrocution effect
-            person.classList.add('electrocuted');
-            
-            // Show lightning impact after a brief moment
-            setTimeout(() => {
-                impactEffect.textContent = '⚡';
-                impactEffect.classList.add('show');
-                
-                // Change to electrocuted state
-                person.textContent = '😵';
-                
-                // Show speech bubble
-                const electricMessages = [
-                    "ZZZZAP! ⚡",
-                    "I'm SHOCKED!",
-                    "That was ELECTRIFYING!",
-                    "OUCH! ⚡⚡⚡",
-                    "I didn't see that coming!"
-                ];
-                const randomMessage = electricMessages[Math.floor(Math.random() * electricMessages.length)];
-                speechBubble.textContent = randomMessage;
-                speechBubble.classList.add('show');
-                
-                // After effect, show burned/dead state
-                setTimeout(() => {
-                    person.textContent = '🪦';
-                    impactEffect.textContent = '💀';
-                    speechBubble.textContent = "I'm toast... 🔥";
-                    
-                    // Remove effects after some time
-                    setTimeout(() => {
-                        impactEffect.classList.remove('show');
-                        speechBubble.classList.remove('show');
-                        person.classList.remove('electrocuted');
-                        person.textContent = '🧍';
-                        impactEffect.textContent = '💥';
-                    }, 2500);
-                }, 1000);
-            }, 300);
         }
 
-        // Create equivalence timeline
-        function createTimeline() {
-            const track = document.getElementById('timelineTrack');
-            track.innerHTML = '';
-            
-            EQUIVALENCES.forEach((equiv, index) => {
-                const item = document.createElement('div');
-                item.className = 'timeline-item';
-                item.innerHTML = `
-                    <span class="timeline-emoji">${equiv.icon}</span>
-                    <span class="timeline-energy">${equiv.maxEnergy === Infinity ? '150+' : equiv.maxEnergy}J</span>
-                `;
-                item.title = equiv.text;
-                track.appendChild(item);
+        // Create presets
+        function createPresets() {
+            const presets = [
+                { name: 'Pen', weight: 0.01, height: 2 },
+                { name: 'Ball', weight: 0.5, height: 5 },
+                { name: 'Hammer', weight: 2, height: 10 },
+                { name: 'Safe', weight: 50, height: 5 },
+                { name: 'Wrench', weight: 3, height: 20 },
+                { name: 'Brick', weight: 2.5, height: 15 }
+            ];
+
+            const container = document.getElementById('presetsContainer');
+            presets.forEach(preset => {
+                const button = document.createElement('button');
+                button.className = 'preset-button';
+                button.textContent = preset.name;
+                button.onclick = () => {
+                    weightInput.value = preset.weight;
+                    heightInput.value = preset.height;
+                    updateDisplay();
+                };
+                container.appendChild(button);
             });
         }
 
-        // Update timeline marker position
-        function updateTimeline(energy) {
-            const track = document.getElementById('timelineTrack');
-            const marker = document.getElementById('currentMarker');
-            const items = track.querySelectorAll('.timeline-item');
+        // Create timeline
+        function createTimeline() {
+            const energyValues = [0, 100, 500, 1000, 2000, 5000, 10000];
+            timelineTrack.innerHTML = '';
+
+            energyValues.forEach(energy => {
+                const item = document.createElement('div');
+                item.className = 'timeline-item';
+                item.innerHTML = `
+                    <div class="timeline-value">${energy}J</div>
+                    <div class="timeline-description">${getEquivalence(energy).icon}</div>
+                `;
+                item.onclick = () => {
+                    selectTimelineItem(item, energy);
+                };
+                timelineTrack.appendChild(item);
+            });
+        }
+
+        // Select timeline item
+        function selectTimelineItem(element, energy) {
+            document.querySelectorAll('.timeline-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            element.classList.add('active');
+
+            const items = document.querySelectorAll('.timeline-item');
+            const currentIndex = Array.from(items).indexOf(element);
             
-            // Remove active class from all items
-            items.forEach(item => item.classList.remove('active'));
-            
-            // Find current equivalence index
-            let currentIndex = 0;
-            for (let i = 0; i < EQUIVALENCES.length; i++) {
-                if (energy <= EQUIVALENCES[i].maxEnergy) {
-                    currentIndex = i;
-                    break;
-                }
-            }
-            
-            // Add active class to current item
-            if (items[currentIndex]) {
-                items[currentIndex].classList.add('active');
-                
-                // Position marker
+            if (currentIndex !== -1) {
                 const itemRect = items[currentIndex].getBoundingClientRect();
-                const trackRect = track.getBoundingClientRect();
+                const trackRect = timelineTrack.getBoundingClientRect();
                 const markerLeft = itemRect.left - trackRect.left + (itemRect.width / 2) - 40;
-                marker.style.left = markerLeft + 'px';
+                timelineMarker.style.left = markerLeft + 'px';
                 
-                // Scroll item into view if needed
+                items[currentIndex].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            }
+        }
+
+        // Update timeline
+        function updateTimeline(energy) {
+            const items = document.querySelectorAll('.timeline-item');
+            let closestItem = items[0];
+            let minDiff = Math.abs(100 - energy);
+
+            items.forEach((item, index) => {
+                const itemValue = [0, 100, 500, 1000, 2000, 5000, 10000][index];
+                const diff = Math.abs(itemValue - energy);
+                if (diff < minDiff) {
+                    minDiff = diff;
+                    closestItem = item;
+                }
+            });
+
+            const currentIndex = Array.from(items).indexOf(closestItem);
+            if (currentIndex !== -1) {
+                const itemRect = items[currentIndex].getBoundingClientRect();
+                const trackRect = timelineTrack.getBoundingClientRect();
+                const markerLeft = itemRect.left - trackRect.left + (itemRect.width / 2) - 40;
+                timelineMarker.style.left = markerLeft + 'px';
+                
                 items[currentIndex].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
             }
         }
@@ -1580,11 +1131,8 @@
 
         // Calculate dynamic max height for visualization scale
         function getDynamicMaxHeight(currentHeight) {
-            // Add 30% margin above current height, rounded up to nearest 10
             const withMargin = currentHeight * 1.3;
             const roundedUp = Math.ceil(withMargin / 10) * 10;
-            
-            // Minimum scale of 10m
             return Math.max(10, roundedUp);
         }
 
@@ -1593,7 +1141,6 @@
             heightScale.innerHTML = '';
             const dynamicMaxHeight = getDynamicMaxHeight(currentHeight);
             
-            // Create marks every 10m or 5m depending on scale
             const marks = [];
             const interval = dynamicMaxHeight <= 20 ? 5 : 10;
             for (let i = 0; i <= dynamicMaxHeight; i += interval) {
@@ -1610,13 +1157,11 @@
                 }
             });
 
-            // Update reference positions based on their actual heights
             const visualizationElement = document.getElementById('visualization');
             const visualizationHeight = visualizationElement.offsetHeight;
             const groundHeight = 80;
             const usableHeight = visualizationHeight - groundHeight;
             
-            // Reference heights in meters
             const references = [
                 { id: 'ref-car', height: 1.5 },
                 { id: 'ref-truck', height: 3.5 },
@@ -1625,26 +1170,23 @@
                 { id: 'ref-arc', height: 50 }
             ];
             
-            // Position each reference at its actual height (only show if within scale)
             references.forEach(ref => {
                 const element = document.getElementById(ref.id);
                 if (element) {
                     if (ref.height <= dynamicMaxHeight) {
-                        // Calculate position from bottom
                         const positionFromBottom = groundHeight + (ref.height / dynamicMaxHeight) * usableHeight;
                         element.style.position = 'absolute';
                         element.style.bottom = positionFromBottom + 'px';
                         element.style.right = '60px';
                         element.style.display = 'flex';
                     } else {
-                        // Hide references that are above current scale
                         element.style.display = 'none';
                     }
                 }
             });
         }
 
-        // Calculate potential/kinetic energy
+        // Calculate energy
         function calculateEnergy(mass, height) {
             return mass * g * height;
         }
@@ -1663,32 +1205,28 @@
             currentHeight = parseFloat(heightInput.value);
             
             heightValue.textContent = currentHeight.toFixed(1) + ' m';
+            weightValue.textContent = currentWeight.toFixed(1) + ' kg';
             
             const energy = calculateEnergy(currentWeight, currentHeight);
             energyDisplay.textContent = `Energy: ${energy.toFixed(1)} J`;
             
-            // Update equivalence
             const equiv = getEquivalence(energy);
             document.getElementById('equivalenceDisplayLarge').innerHTML = `
                 <div class="equivalence-icon-large">${equiv.icon}</div>
                 <div class="equivalence-text-large">${equiv.text}</div>
             `;
             
-            // Update timeline
             updateTimeline(energy);
             
-            // Position object based on height with dynamic scale
             const dynamicMaxHeight = getDynamicMaxHeight(currentHeight);
             const visualizationElement = document.getElementById('visualization');
             const visualizationHeight = visualizationElement.offsetHeight;
             const groundHeight = 80;
             const usableHeight = visualizationHeight - groundHeight;
             
-            // Object always starts from near the top of the visible scale
             const topPosition = ((dynamicMaxHeight - currentHeight) / dynamicMaxHeight) * usableHeight;
             fallingObject.style.top = topPosition + 'px';
             
-            // Update damage cards
             const damageLevel = getDamageLevel(energy);
             ['slight', 'minor', 'major', 'fatality'].forEach(level => {
                 const card = document.getElementById(level);
@@ -1699,7 +1237,6 @@
                 }
             });
             
-            // Update scale and references
             updateHeightScale();
         }
 
@@ -1709,15 +1246,18 @@
             updateDisplay();
         });
 
+        weightInput.addEventListener('input', () => {
+            currentWeight = parseFloat(weightInput.value);
+            updateDisplay();
+        });
+
         // Simulate fall
         function simulateFall() {
-            // Reset object
             fallingObject.style.animation = 'none';
             impactEffect.classList.remove('show');
             speechBubble.classList.remove('show');
             person.textContent = '🧍';
             
-            // Force reflow to restart animation
             void fallingObject.offsetWidth;
             
             setTimeout(() => {
@@ -1728,26 +1268,20 @@
                 const usableHeight = visualizationHeight - groundHeight;
                 const startPosition = ((dynamicMaxHeight - currentHeight) / dynamicMaxHeight) * usableHeight;
                 
-                // Calculate fall time (t = √(2h/g))
                 const fallTime = Math.sqrt(2 * currentHeight / g);
                 
-                // Set start position and animate
                 fallingObject.style.setProperty('--start-height', startPosition + 'px');
                 fallingObject.style.animation = `fall ${fallTime}s linear`;
                 
-                // Impact after fall time
                 setTimeout(() => {
                     impactEffect.classList.add('show');
                     
                     const damageLevel = getDamageLevel(calculateEnergy(currentWeight, currentHeight));
-                    
-                    // Get random speech bubble message for this damage level
                     const messages = SPEECH_BUBBLES[damageLevel];
                     const randomMessage = messages[Math.floor(Math.random() * messages.length)];
                     speechBubble.textContent = randomMessage;
                     speechBubble.classList.add('show');
                     
-                    // Change person state based on damage
                     switch(damageLevel) {
                         case 'slight':
                             person.textContent = '🤕';
@@ -1771,7 +1305,33 @@
             }, 100);
         }
 
-        // Recalculate on window resize
+        // Swipe handling for timeline
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        timelineContainer.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+        }, false);
+
+        timelineContainer.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        }, false);
+
+        function handleSwipe() {
+            const swipeThreshold = 50;
+            const diff = touchStartX - touchEndX;
+
+            if (Math.abs(diff) > swipeThreshold) {
+                if (diff > 0) {
+                    timelineContainer.scrollLeft += 150;
+                } else {
+                    timelineContainer.scrollLeft -= 150;
+                }
+            }
+        }
+
+        // Window resize
         window.addEventListener('resize', () => {
             isMobile = window.innerWidth <= 768;
             updateHeightScale();
@@ -1783,6 +1343,12 @@
         createTimeline();
         updateHeightScale();
         updateDisplay();
+
+        // Add weight value display
+        const weightValue = document.createElement('div');
+        weightValue.id = 'weightValue';
+        weightValue.className = 'value-display';
+        weightValue.textContent = '5.0 kg';
     </script>
 </body>
 </html>
