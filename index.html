@@ -656,7 +656,7 @@
   </div>
 
   <!-- EASTER EGG -->
-  <div id="easterOverlay" style="position: fixed; inset: 0; background: rgba(0,0,0,0.95); display: none; z-index: 9999; align-items: center; justify-content: center; flex-direction: column;">
+  <div id="easterOverlay" style="position: fixed; inset: 0; background: rgba(0,0,0,0.95); display: none; z-index: 9999; align-items: center; justify-content: center; flex-direction: column; gap: 20px;">
     <style>
       @keyframes heartbeat {
         0%, 100% { transform: scale(1); }
@@ -676,27 +676,33 @@
       }
     </style>
     
-    <div style="position: relative; display: flex; align-items: center; justify-content: center; margin-bottom: 40px;">
-      <!-- Photo -->
-      <img src="easter.jpg" style="max-width: 65%; max-height: 60%; border: 4px solid #FF5716; border-radius: 15px; position: relative; z-index: 1; box-shadow: 0 20px 60px rgba(255, 87, 22, 0.6);">
+    <!-- Text with Heart ABOVE the image -->
+    <div style="
+      font-size: 1.8rem;
+      font-weight: bold;
+      color: #FF5716;
+      text-align: center;
+      letter-spacing: 2px;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      justify-content: center;
+    ">
+      <span>Made with Love</span>
+      <div style="
+        font-size: 3rem;
+        animation: heartbeat 1.5s ease-in-out infinite;
+        filter: drop-shadow(0 0 15px #FF1493) drop-shadow(0 0 30px #FF69B4);
+      ">♥</div>
+      <span>Quali-Team</span>
+    </div>
+    
+    <!-- Photo -->
+    <div style="position: relative; display: flex; align-items: center; justify-content: center;">
+      <img src="easter.jpg" style="max-width: 90%; max-height: 65%; border: 4px solid #FF5716; border-radius: 15px; position: relative; z-index: 1; box-shadow: 0 20px 60px rgba(255, 87, 22, 0.6);">
       
       <!-- Fireworks Container -->
       <div id="fireworksContainer" style="position: absolute; width: 100%; height: 100%; pointer-events: none;"></div>
-      
-      <!-- Floating Heart with Glow -->
-      <div style="
-        position: absolute;
-        top: -20px;
-        right: 20px;
-        font-size: 4rem;
-        animation: heartbeat 1.5s ease-in-out infinite;
-        filter: drop-shadow(0 0 15px #FF1493) drop-shadow(0 0 30px #FF69B4);
-        z-index: 2;
-      ">💗</div>
-    </div>
-    
-    <div style="font-size: 1.8rem; font-weight: bold; color: #FF5716; text-align: center; letter-spacing: 2px;">
-      Made with Love ♥ Quali-Team
     </div>
   </div>
 
@@ -1666,10 +1672,37 @@
       }
     }
 
-    function loadIntroLeaderboard() {
+    async function loadIntroLeaderboard() {
       const list = document.getElementById('introLeaderboardList');
       if (!list) return;
-      const leaderboard = JSON.parse(localStorage.getItem('leaderboard') || '[]');
+      
+      let leaderboard = [];
+      
+      // Essayer Supabase en premier
+      if (supabase && SUPABASE_URL && SUPABASE_URL !== 'https://xxxxx.supabase.co') {
+        try {
+          const { data, error } = await supabase
+            .from('scores')
+            .select('*')
+            .order('score', { ascending: false })
+            .limit(10);
+          
+          if (data && !error) {
+            leaderboard = data;
+            console.log('✅ Hall of Fame loaded from Supabase!');
+          } else {
+            console.log('⚠️ Supabase error, using localStorage');
+            leaderboard = JSON.parse(localStorage.getItem('leaderboard') || '[]');
+          }
+        } catch (e) {
+          console.log('⚠️ Supabase exception, using localStorage');
+          leaderboard = JSON.parse(localStorage.getItem('leaderboard') || '[]');
+        }
+      } else {
+        console.log('⚠️ Supabase not configured, using localStorage');
+        leaderboard = JSON.parse(localStorage.getItem('leaderboard') || '[]');
+      }
+      
       if (leaderboard.length === 0) {
         list.innerHTML = '<div style="text-align: center; padding: 40px; color: #999;"><div style="font-size: 3rem; margin-bottom: 20px;">🏆</div><div style="font-size: 1.2rem; color: #000;">No scores yet...</div><div style="color: #666; margin-top: 10px;">Be the first to enter!</div></div>';
         return;
@@ -1687,7 +1720,7 @@
         };
         const info = gradeInfo[grade];
         
-        const now = new Date(score.timestamp || Date.now());
+        const now = new Date(score.created_at ? new Date(score.created_at).getTime() : score.timestamp || Date.now());
         const date = now.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit' });
         const time = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
         
@@ -1746,7 +1779,7 @@
             <!-- Inspected -->
             <div style="text-align: center;">
               <div style="font-size: 1.3rem; font-weight: 900; color: #00A8E9;">
-                ${score.total_count || 30}
+                ${score.products_inspected || 30}
               </div>
               <div style="font-size: 0.65rem; color: #000; font-weight: bold;">
                 insp
@@ -1756,7 +1789,7 @@
             <!-- Good -->
             <div style="text-align: center;">
               <div style="font-size: 1.3rem; font-weight: 900; color: #00FF00;">
-                ${score.good_count || 0}
+                ${score.products_good || 0}
               </div>
               <div style="font-size: 0.65rem; color: #000; font-weight: bold;">
                 good
@@ -1827,6 +1860,11 @@
     }
 
     window.addEventListener('load', () => {
+      // Nettoyer les vieux scores test du localStorage
+      let leaderboard = JSON.parse(localStorage.getItem('leaderboard') || '[]');
+      leaderboard = leaderboard.filter(s => s.name && s.name.trim() && s.score > 0);
+      localStorage.setItem('leaderboard', JSON.stringify(leaderboard));
+      
       // Vérifier la connexion Supabase
       if (supabase && SUPABASE_URL && SUPABASE_URL !== 'https://xxxxx.supabase.co') {
         console.log('✅ Supabase Connected!');
