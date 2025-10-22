@@ -304,7 +304,7 @@
 
         .presets-section {
             background: #f8f9fa;
-            padding: 15px;
+            padding: 10px;
             border-radius: 15px;
             border: 2px solid #e9ecef;
         }
@@ -611,7 +611,7 @@
             background: #fff3cd;
             border: 2px solid #ffc107;
             border-radius: 10px;
-            padding: 15px;
+            padding: 10px;
             text-align: center;
             color: #856404;
             font-weight: bold;
@@ -656,7 +656,7 @@
                 #fd7e14 60%, 
                 #dc3545 60%, 
                 #dc3545 100%);
-            padding: 15px;
+            padding: 10px;
             border-radius: 15px;
             overflow-x: auto;
             overflow-y: hidden;
@@ -907,7 +907,7 @@
             }
 
             .control-group {
-                padding: 15px;
+                padding: 8px;
                 margin-bottom: 15px;
             }
 
@@ -967,7 +967,7 @@
 
             .btn-simulate {
                 width: 100%;
-                padding: 15px;
+                padding: 8px;
                 font-size: 1.1em;
                 margin-bottom: 15px;
             }
@@ -978,7 +978,7 @@
             }
 
             .equivalence-timeline-section {
-                padding: 15px;
+                padding: 8px;
                 margin-bottom: 15px;
             }
 
@@ -989,24 +989,24 @@
 
             .timeline-track {
                 padding: 10px;
-                min-height: 250px;
+                min-height: 150px;
             }
 
             .timeline-item {
-                padding: 15px;
-                min-width: 120px;
+                padding: 8px;
+                min-width: 80px;
             }
 
             .timeline-emoji {
-                font-size: 3.5em;
+                font-size: 2.5em;
             }
 
             .timeline-energy {
-                font-size: 0.9em;
+                font-size: 0.75em;
             }
 
             .current-equivalence {
-                padding: 15px;
+                padding: 8px;
             }
 
             .equivalence-display-large {
@@ -1017,7 +1017,7 @@
             }
 
             .equivalence-icon-large {
-                font-size: 3.5em;
+                font-size: 2.5em;
             }
 
             .equivalence-text-large {
@@ -1025,7 +1025,7 @@
             }
 
             .results {
-                padding: 15px;
+                padding: 8px;
             }
 
             .results h2 {
@@ -1034,7 +1034,7 @@
 
             .energy-display {
                 font-size: 1.5em;
-                padding: 15px;
+                padding: 8px;
                 margin-bottom: 15px;
             }
 
@@ -1044,7 +1044,7 @@
             }
 
             .damage-card {
-                padding: 15px;
+                padding: 8px;
             }
 
             .damage-icon {
@@ -1082,7 +1082,7 @@
             }
 
             .speech-bubble {
-                font-size: 0.9em;
+                font-size: 0.75em;
                 padding: 10px 15px;
                 bottom: 180px;
                 left: 30%;
@@ -1109,7 +1109,7 @@
             }
 
             .lightning-easter-egg {
-                font-size: 0.9em;
+                font-size: 0.75em;
             }
         }
     </style>
@@ -1142,7 +1142,6 @@
             </div>
         </div>
 
-            <img src="./logo_drop.png" alt="Logo" class="header-logo" onerror="this.style.display='none'">
         <div class="main-grid">
             <!-- Section Controls & Simulation (mobile: section 1) -->
             <div class="top-section section-mobile active" id="controls">
@@ -1523,43 +1522,6 @@
 
         // Create equivalence timeline
         function createTimeline() {
-        // Create mobile-friendly timeline - shows zoomed view
-        function createTimelineForMobile(energy) {
-            const track = document.getElementById('timelineTrack');
-            track.innerHTML = '';
-            
-            // Find current index
-            let currentIndex = 0;
-            for (let i = 0; i < EQUIVALENCES.length; i++) {
-                if (energy <= EQUIVALENCES[i].maxEnergy) {
-                    currentIndex = i;
-                    break;
-                }
-            }
-            
-            // Show: 2 before, current, 2 after (total 5 items max)
-            const startIndex = Math.max(0, currentIndex - 2);
-            const endIndex = Math.min(EQUIVALENCES.length - 1, currentIndex + 2);
-            
-            // Add items
-            for (let i = startIndex; i <= endIndex; i++) {
-                const equiv = EQUIVALENCES[i];
-                const item = document.createElement('div');
-                item.className = 'timeline-item' + (i === currentIndex ? ' active' : '');
-                item.innerHTML = `
-                    <span class="timeline-emoji">${equiv.icon}</span>
-                    <span class="timeline-energy">${equiv.maxEnergy === Infinity ? '150+' : equiv.maxEnergy}J</span>
-                `;
-                item.title = equiv.text;
-                track.appendChild(item);
-                
-                if (i === currentIndex) {
-                    setTimeout(() => {
-                        item.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-                    }, 100);
-                }
-            }
-        }
 
             const track = document.getElementById('timelineTrack');
             track.innerHTML = '';
@@ -1578,10 +1540,6 @@
 
         // Update timeline marker position
         function updateTimeline(energy) {
-            const isMobilePortrait = window.innerWidth <= 768;
-            if (isMobilePortrait) {
-                createTimelineForMobile(energy);
-                return;
             }
             
             const track = document.getElementById('timelineTrack');
