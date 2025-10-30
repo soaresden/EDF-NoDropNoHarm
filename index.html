@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dropped Object Impact Simulator</title>
+    <title>Falling Object Impact Simulator</title>
     <style>
         * {
             margin: 0;
@@ -19,13 +19,206 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #00A8E9 0%, #000E47 100%);
             min-height: 100vh;
-            padding: 20px;
+            padding: 10px;
             overflow-x: hidden;
             width: 100%;
             max-width: 100vw;
         }
 
-        /* Navigation mobile - cachée sur desktop */
+        /* Stats Display in Visualization */
+        .stats-display {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 12px 15px;
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            z-index: 10;
+            font-size: 0.85em;
+        }
+
+        /* Mobile stats - above visualization */
+        .stats-display-mobile {
+            display: none;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 10px 15px;
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            font-size: 0.8em;
+            margin-bottom: 10px;
+        }
+
+        .stats-display .stat-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 5px;
+            white-space: nowrap;
+        }
+
+        .stats-display .stat-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .stats-display .stat-label {
+            color: #6c757d;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .stats-display .stat-value {
+            font-weight: bold;
+        }
+
+        .stat-row.total .stat-value {
+            color: #00A8E9;
+        }
+
+        .stat-row.safe .stat-value {
+            color: #28a745;
+        }
+
+        .stat-row.lives .stat-value {
+            color: #dc3545;
+        }
+
+        .stat-row.injuries .stat-value {
+            color: #fd7e14;
+        }
+
+        /* Custom Weight Input */
+        .custom-weight-group {
+            background: linear-gradient(135deg, #00A8E9 0%, #000E47 100%);
+            padding: 15px;
+            border-radius: 15px;
+            border: 3px solid #00A8E9;
+            box-shadow: 0 4px 15px rgba(0,168,233,0.3);
+        }
+
+        .custom-weight-group label {
+            color: white !important;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .custom-weight-input {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .custom-weight-input input {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid white;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .custom-weight-input input:focus {
+            outline: none;
+            border-color: #20c997;
+            box-shadow: 0 0 10px rgba(32, 201, 151, 0.5);
+        }
+
+        .custom-weight-unit {
+            color: white;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .custom-icon {
+            font-size: 2em;
+            text-align: center;
+            margin-top: 5px;
+        }
+
+        /* Collapsible Presets */
+        .collapsible-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .collapsible-arrow {
+            transition: transform 0.3s;
+            font-size: 1.2em;
+        }
+
+        .collapsible-header.collapsed .collapsible-arrow {
+            transform: rotate(-90deg);
+        }
+
+        .collapsible-content {
+            max-height: 500px;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+
+        .collapsible-content.collapsed {
+            max-height: 0;
+        }
+
+        .height-scale {
+            position: absolute;
+            right: 10px;
+            top: 0;
+            bottom: 80px;
+            width: 50px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            pointer-events: none;
+        }
+
+        .scale-mark {
+            position: absolute;
+            right: 0;
+            font-size: 0.85em;
+            color: #495057;
+            font-weight: 700;
+            padding: 3px 6px;
+            background: rgba(255,255,255,0.9);
+            border-radius: 4px;
+            border: 2px solid #00A8E9;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .scale-mark::before {
+            content: '';
+            position: absolute;
+            left: -20px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 2px;
+            background: #00A8E9;
+        }
+
+        /* Reference height indicators with dotted lines */
+        .reference-height-line {
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 2px;
+            border-top: 2px dotted rgba(0, 168, 233, 0.5);
+            pointer-events: none;
+            z-index: 3;
+        }
+
+        /* Navigation mobile */
         .mobile-nav {
             position: fixed;
             top: 0;
@@ -47,8 +240,8 @@
         }
 
         .header-logo-mobile {
-            max-height: 250px;
-            max-width: 400px;
+            max-height: 50px;
+            max-width: 120px;
             object-fit: contain;
         }
 
@@ -94,7 +287,7 @@
         }
 
         .container {
-            max-width: 1400px;
+            max-width: 1800px;
             margin: 0 auto;
             background: white;
             border-radius: 20px;
@@ -106,20 +299,24 @@
         .header {
             background: linear-gradient(135deg, #00A8E9 0%, #000E47 100%);
             color: white;
-            padding: 40px 30px;
+            padding: 30px 30px 20px 30px;
             text-align: center;
             position: relative;
+        }
+
+        .header-top {
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 30px;
-            min-height: 140px;
+            min-height: 100px;
+            margin-bottom: 15px;
         }
 
         .header-logo {
             max-height: 100%;
-            height: 150px;
-            max-width: 300px;
+            height: 80px;
+            max-width: 200px;
             object-fit: contain;
         }
 
@@ -129,20 +326,20 @@
         }
 
         .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
+            font-size: 2em;
+            margin-bottom: 8px;
             cursor: default;
         }
 
         .header p {
-            font-size: 1.1em;
+            font-size: 1em;
             opacity: 0.95;
         }
 
         .header-description {
-            font-size: 0.95em;
+            font-size: 0.9em;
             opacity: 0.85;
-            margin-top: 15px;
+            margin-top: 10px;
             font-style: italic;
             line-height: 1.5;
         }
@@ -163,22 +360,6 @@
         @keyframes sparkle {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.7; }
-        }
-
-        .florent-label {
-            position: absolute;
-            bottom: 40px;
-            left: 30%;
-            transform: translateX(-50%);
-            background: rgba(255,255,255,0.95);
-            padding: 5px 12px;
-            border-radius: 15px;
-            font-size: 0.85em;
-            font-weight: bold;
-            color: #495057;
-            z-index: 8;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            pointer-events: none;
         }
 
         .person.electrocuted {
@@ -203,47 +384,53 @@
         .main-grid {
             display: grid;
             grid-template-columns: 1fr;
-            gap: 30px;
-            padding: 30px;
+            gap: 20px;
+            padding: 20px;
             max-width: 100%;
         }
 
         .top-section {
             display: grid;
-            grid-template-columns: 350px 1fr;
-            gap: 30px;
+            grid-template-columns: 320px 1fr;
+            gap: 20px;
             max-width: 100%;
         }
 
         .left-column {
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 15px;
         }
 
         .controls {
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 15px;
         }
 
         .control-group {
             background: #f8f9fa;
-            padding: 20px;
+            padding: 15px;
             border-radius: 15px;
             border: 2px solid #e9ecef;
         }
 
         .control-group label {
             display: block;
-            font-weight: bold;
-            color: #495057;
+            font-weight: 600;
             margin-bottom: 10px;
-            font-size: 1.1em;
+            color: #495057;
+            font-size: 0.95em;
         }
 
-        .control-group input[type="range"] {
-            width: 100%;
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        input[type="range"] {
+            flex: 1;
             height: 8px;
             border-radius: 5px;
             background: #dee2e6;
@@ -251,260 +438,116 @@
             -webkit-appearance: none;
         }
 
-        .control-group input[type="range"]::-webkit-slider-thumb {
+        input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
-            width: 24px;
-            height: 24px;
+            width: 20px;
+            height: 20px;
             border-radius: 50%;
             background: #00A8E9;
             cursor: pointer;
-            transition: all 0.3s;
+            border: 3px solid white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
 
-        .control-group input[type="range"]::-webkit-slider-thumb:hover {
-            transform: scale(1.2);
-            background: #000E47;
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #00A8E9;
+            cursor: pointer;
+            border: 3px solid white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
 
-        .weight-inputs {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            margin-top: 10px;
-        }
-
-        .weight-input-field {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-
-        .weight-input-field label {
-            font-size: 0.85em;
-            color: #6c757d;
-            font-weight: normal;
-        }
-
-        .weight-input-field input[type="number"] {
-            padding: 8px;
-            border: 2px solid #dee2e6;
-            border-radius: 8px;
-            font-size: 1em;
+        .height-value {
+            min-width: 60px;
+            text-align: right;
             font-weight: bold;
             color: #00A8E9;
-            text-align: center;
-        }
-
-        .weight-input-field input[type="number"]:focus {
-            outline: none;
-            border-color: #00A8E9;
-        }
-
-        .presets-section {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 15px;
-            border: 2px solid #e9ecef;
-        }
-
-        .presets-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            user-select: none;
-        }
-
-        .presets-header h3 {
             font-size: 1em;
-            color: #495057;
-            margin: 0;
         }
 
-        .collapse-icon {
-            font-size: 1.2em;
-            transition: transform 0.3s;
-            color: #00A8E9;
-        }
-
-        .collapse-icon.collapsed {
-            transform: rotate(-90deg);
-        }
-
-        .presets-content {
-            max-height: 400px;
-            overflow: hidden;
-            transition: max-height 0.3s ease;
-            margin-top: 15px;
-        }
-
-        .presets-content.collapsed {
-            max-height: 0;
-            margin-top: 0;
-        }
-
-        .presets-grid {
+        .preset-buttons {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
+            gap: 8px;
         }
 
         .preset-btn {
             background: white;
-            border: 2px solid #dee2e6;
-            padding: 12px;
+            border: 2px solid #e9ecef;
+            padding: 10px;
             border-radius: 10px;
             cursor: pointer;
             transition: all 0.3s;
             text-align: center;
+            font-size: 0.9em;
         }
 
         .preset-btn:hover {
+            background: #00A8E9;
+            color: white;
             border-color: #00A8E9;
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-
-        .preset-btn.active {
-            border-color: #00A8E9;
-            background: #e6f7ff;
+            box-shadow: 0 4px 8px rgba(0,168,233,0.3);
         }
 
         .preset-icon {
-            font-size: 1.8em;
+            font-size: 1.5em;
+            display: block;
             margin-bottom: 5px;
         }
 
-        .preset-name {
-            font-weight: bold;
-            font-size: 0.9em;
-            color: #495057;
+        .preset-label {
+            font-size: 0.85em;
+            font-weight: 600;
         }
 
         .preset-weight {
-            font-size: 0.8em;
-            color: #6c757d;
-        }
-
-        .value-display {
-            font-size: 2em;
-            font-weight: bold;
-            color: #00A8E9;
-            text-align: center;
-            margin-top: 10px;
-        }
-
-        .btn-simulate {
-            background: linear-gradient(135deg, #00A8E9 0%, #000E47 100%);
-            color: white;
-            border: none;
-            padding: 15px 40px;
-            font-size: 1.2em;
-            font-weight: bold;
-            border-radius: 50px;
-            cursor: pointer;
-            transition: all 0.3s;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
-
-        .btn-simulate:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-        }
-
-        .btn-simulate:active {
-            transform: translateY(0);
-        }
-
-        .visualization {
-            position: relative;
-            background: linear-gradient(180deg, #e3f2fd 0%, #ffffff 100%);
-            border-radius: 15px;
-            border: 3px solid #e9ecef;
-            height: 500px;
-            overflow: hidden;
-        }
-
-        .height-references-container {
-            position: absolute;
-            top: 0;
-            right: 0;
-            bottom: 0;
-            left: 0;
-            pointer-events: none;
-            z-index: 5;
-        }
-
-        .height-reference {
-            position: absolute;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            opacity: 0.8;
-            transition: all 0.3s;
-            pointer-events: auto;
-        }
-
-        .height-reference:hover {
-            opacity: 1;
-            transform: translateX(-5px);
-        }
-
-        .reference-line-horizontal {
-            width: 50px;
-            height: 2px;
-            background: #6c757d;
-        }
-
-        .reference-icon {
-            font-size: 3em;
-            filter: drop-shadow(2px 2px 3px rgba(0,0,0,0.3));
-        }
-
-        .reference-label {
             font-size: 0.75em;
-            font-weight: bold;
-            color: #495057;
-            text-align: center;
-            background: rgba(255,255,255,0.95);
-            padding: 3px 8px;
-            border-radius: 6px;
-            white-space: nowrap;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-
-        .height-scale {
-            position: absolute;
-            left: 10px;
-            top: 20px;
-            bottom: 80px;
-            width: 40px;
-            border-right: 3px solid #adb5bd;
-        }
-
-        .scale-mark {
-            position: absolute;
-            right: 5px;
-            font-size: 0.8em;
             color: #6c757d;
+            margin-top: 3px;
+        }
+
+        .visualization-container {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 15px;
+            border: 2px solid #e9ecef;
+            height: 600px;
+            position: relative;
+        }
+
+        #visualization {
+            position: relative;
+            height: 100%;
+            background: linear-gradient(to bottom, 
+                rgba(135, 206, 235, 0.3) 0%,
+                rgba(255, 255, 255, 0.1) 70%,
+                rgba(101, 67, 33, 0.1) 100%);
+            border-radius: 10px;
+            overflow: hidden;
         }
 
         .falling-object {
             position: absolute;
-            left: 30%;
+            font-size: 2.5em;
+            z-index: 5;
+            left: 50%;
             transform: translateX(-50%);
-            width: 60px;
-            height: 60px;
-            background: #f5576c;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2em;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            transition: top 0.05s linear;
+            filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.3));
+        }
+
+        @keyframes fall {
+            from {
+                top: var(--start-height);
+                transform: translateX(-50%) rotate(0deg);
+            }
+            to {
+                top: calc(100% - 160px);
+                transform: translateX(-50%) rotate(720deg);
+            }
         }
 
         .ground {
@@ -513,1059 +556,1080 @@
             left: 0;
             right: 0;
             height: 80px;
-            background: #8b4513;
-            border-top: 4px solid #654321;
+            background: linear-gradient(to bottom, #8B4513 0%, #654321 100%);
+            border-top: 3px solid #5D4037;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            padding-bottom: 5px;
+        }
+
+        .ground::before {
+            content: '🌱 🌾 🌿';
+            position: absolute;
+            top: -15px;
+            font-size: 1.2em;
+            width: 100%;
+            text-align: center;
+            letter-spacing: 30px;
         }
 
         .person {
-            position: absolute;
-            bottom: 80px;
-            left: 30%;
-            transform: translateX(-50%);
             font-size: 3em;
-            z-index: 10;
+            z-index: 6;
+            position: absolute;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.3));
         }
 
         .impact-effect {
             position: absolute;
-            bottom: 140px;
-            left: 30%;
+            bottom: 120px;
+            left: 50%;
             transform: translateX(-50%);
-            font-size: 3em;
+            font-size: 4em;
+            z-index: 7;
             opacity: 0;
             transition: opacity 0.3s;
         }
 
         .impact-effect.show {
             opacity: 1;
+            animation: impact 0.5s ease-out;
+        }
+
+        @keyframes impact {
+            0% { transform: translateX(-50%) scale(0.5); }
+            50% { transform: translateX(-50%) scale(1.3); }
+            100% { transform: translateX(-50%) scale(1); }
         }
 
         .speech-bubble {
             position: absolute;
-            bottom: 200px;
-            left: 30%;
+            bottom: 180px;
+            left: 50%;
             transform: translateX(-50%);
             background: white;
-            border: 3px solid #000;
-            border-radius: 20px;
-            padding: 15px 20px;
-            font-size: 1.2em;
-            font-weight: bold;
-            color: #000;
-            white-space: nowrap;
-            max-width: 300px;
+            padding: 10px 15px;
+            border-radius: 15px;
+            border: 2px solid #495057;
+            font-weight: 600;
+            font-size: 0.9em;
+            max-width: 200px;
             text-align: center;
+            z-index: 8;
             opacity: 0;
             transition: opacity 0.3s;
-            z-index: 15;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
         }
 
         .speech-bubble::after {
             content: '';
             position: absolute;
-            bottom: -20px;
+            bottom: -10px;
             left: 50%;
             transform: translateX(-50%);
             width: 0;
             height: 0;
-            border-left: 15px solid transparent;
-            border-right: 15px solid transparent;
-            border-top: 20px solid #000;
-        }
-
-        .speech-bubble::before {
-            content: '';
-            position: absolute;
-            bottom: -15px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 0;
-            height: 0;
-            border-left: 12px solid transparent;
-            border-right: 12px solid transparent;
-            border-top: 17px solid white;
-            z-index: 1;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-top: 10px solid white;
         }
 
         .speech-bubble.show {
             opacity: 1;
-            animation: popIn 0.3s ease-out;
+            animation: bubble 0.3s ease-out;
         }
 
-        @keyframes popIn {
-            0% {
-                transform: translateX(-50%) scale(0.5);
-                opacity: 0;
-            }
-            50% {
-                transform: translateX(-50%) scale(1.1);
-            }
-            100% {
-                transform: translateX(-50%) scale(1);
-                opacity: 1;
-            }
+        @keyframes bubble {
+            0% { transform: translateX(-50%) scale(0); }
+            50% { transform: translateX(-50%) scale(1.1); }
+            100% { transform: translateX(-50%) scale(1); }
         }
 
-        .warning {
-            background: #fff3cd;
-            border: 2px solid #ffc107;
-            border-radius: 10px;
-            padding: 15px;
-            text-align: center;
-            color: #856404;
+        .reference-item {
+            position: absolute;
+            right: 60px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.9);
+            padding: 5px 10px;
+            border-radius: 8px;
+            font-size: 0.8em;
+            border: 2px solid #e9ecef;
+            z-index: 4;
+        }
+
+        .reference-icon {
+            font-size: 1.3em;
+        }
+
+        .reference-label {
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .simulate-btn {
+            background: linear-gradient(135deg, #00A8E9 0%, #000E47 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 12px;
+            font-size: 1.1em;
             font-weight: bold;
-            font-size: 0.9em;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0,168,233,0.3);
         }
 
-        .right-column {
+        .simulate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,168,233,0.4);
+        }
+
+        .simulate-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Severity Table - Vertical Layout */
+        .bottom-tables {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .severity-table {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 15px;
+            border: 2px solid #e9ecef;
+        }
+
+        .severity-table h3 {
+            color: white;
+            background: linear-gradient(135deg, #fd7e14 0%, #dc3545 100%);
+            font-size: 1.1em;
+            font-weight: bold;
+            margin: -15px -15px 15px -15px;
+            padding: 12px 15px;
+            text-align: center;
+            border-radius: 15px 15px 0 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .severity-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            margin-bottom: 8px;
+            border-radius: 10px;
+            border: 3px solid transparent;
+            background: white;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .severity-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .severity-row.active {
+            transform: translateX(5px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        }
+
+        .severity-row.slight { border-color: #28a745; }
+        .severity-row.slight.active { 
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+        }
+
+        .severity-row.minor { border-color: #ffc107; }
+        .severity-row.minor.active { 
+            background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+            color: white;
+        }
+
+        .severity-row.major { border-color: #fd7e14; }
+        .severity-row.major.active { 
+            background: linear-gradient(135deg, #fd7e14 0%, #dc3545 100%);
+            color: white;
+        }
+
+        .severity-row.fatality { border-color: #dc3545; }
+        .severity-row.fatality.active { 
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            color: white;
+        }
+
+        .severity-icon {
+            font-size: 2em;
+            flex-shrink: 0;
+        }
+
+        .severity-info {
+            flex: 1;
+        }
+
+        .severity-title {
+            font-weight: bold;
+            font-size: 1em;
+            margin-bottom: 3px;
+        }
+
+        .severity-threshold {
+            font-size: 0.85em;
+            opacity: 0.8;
+        }
+
+        /* Energy Equivalence Table - Vertical Layout */
+        .equivalence-table {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 15px;
+            border: 2px solid #e9ecef;
             display: flex;
             flex-direction: column;
-            gap: 0;
         }
 
-        .equivalence-timeline-section {
-            background: #f8f9fa;
-            padding: 30px;
-            border-radius: 15px;
-            margin-bottom: 20px;
-        }
-
-        .equivalence-timeline-section h2 {
-            color: #495057;
-            margin-bottom: 25px;
+        .equivalence-table h3 {
+            color: white;
+            background: linear-gradient(135deg, #00A8E9 0%, #000E47 100%);
+            font-size: 1.1em;
+            font-weight: bold;
+            margin: -15px -15px 15px -15px;
+            padding: 12px 15px;
             text-align: center;
+            border-radius: 15px 15px 0 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        #equivalenceRows {
+            max-height: 320px; /* Show approximately 4 rows */
+            overflow-y: auto;
+            overflow-x: hidden;
+            scrollbar-width: thin;
+            scrollbar-color: #00A8E9 #e9ecef;
+        }
+
+        #equivalenceRows::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #equivalenceRows::-webkit-scrollbar-track {
+            background: #e9ecef;
+            border-radius: 10px;
+        }
+
+        #equivalenceRows::-webkit-scrollbar-thumb {
+            background: #00A8E9;
+            border-radius: 10px;
+        }
+
+        #equivalenceRows::-webkit-scrollbar-thumb:hover {
+            background: #0088c9;
+        }
+
+        .equivalence-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            margin-bottom: 8px;
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+            background: white;
+            transition: all 0.3s;
+        }
+
+        .equivalence-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .equivalence-row.active {
+            border-color: #00A8E9;
+            background: linear-gradient(135deg, #00A8E9 0%, #000E47 100%);
+            color: white;
+            transform: translateX(5px);
+            box-shadow: 0 4px 15px rgba(0,168,233,0.4);
+        }
+
+        .equivalence-icon {
+            font-size: 1.8em;
+            flex-shrink: 0;
+        }
+
+        .equivalence-info {
+            flex: 1;
+        }
+
+        .equivalence-label {
+            font-weight: 600;
+            font-size: 0.9em;
+            line-height: 1.3;
+        }
+
+        .equivalence-energy {
+            font-size: 0.75em;
+            opacity: 0.7;
+            margin-top: 3px;
+        }
+
+        .equivalence-row.active .equivalence-energy {
+            opacity: 0.9;
+        }
+
+        /* Integrated Indicator in Visualization */
+        .integrated-indicator {
+            position: absolute;
+            top: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            padding: 12px 20px;
+            border-radius: 12px;
+            border: 3px solid #28a745;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            z-index: 10;
+            display: none; /* Hidden by default - shown only during simulation */
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s;
+        }
+
+        .integrated-indicator.show {
+            display: flex;
+        }
+
+        .integrated-indicator.slight { border-color: #28a745; background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white; }
+        .integrated-indicator.minor { border-color: #ffc107; background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%); color: white; }
+        .integrated-indicator.major { border-color: #fd7e14; background: linear-gradient(135deg, #fd7e14 0%, #dc3545 100%); color: white; }
+        .integrated-indicator.fatality { border-color: #dc3545; background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); color: white; }
+
+        .indicator-icon {
             font-size: 1.8em;
         }
 
-        .timeline-container {
+        .indicator-text {
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .indicator-energy {
+            font-size: 0.9em;
+            opacity: 0.95;
+            margin-left: 5px;
+            padding-left: 10px;
+            border-left: 2px solid rgba(255,255,255,0.5);
+        }
+
+        .info-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 15px;
+            border: 2px solid #e9ecef;
+        }
+
+        .info-section h3 {
+            color: #00A8E9;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .equivalence-display-large {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            border: 2px solid #00A8E9;
+            margin-bottom: 20px;
+        }
+
+        .equivalence-icon-large {
+            font-size: 3em;
+        }
+
+        .equivalence-text-large {
+            flex: 1;
+            font-size: 1.1em;
+            line-height: 1.4;
+            color: #495057;
+        }
+
+        .energy-display {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #00A8E9;
+            margin-bottom: 15px;
+        }
+
+        .equivalence-timeline {
             position: relative;
-            margin-bottom: 40px;
+            margin: 20px 0;
+            overflow-x: auto;
+            padding: 20px 0;
         }
 
         .timeline-track {
             display: flex;
-            align-items: flex-start;
-            gap: 5px;
-            background: linear-gradient(90deg, 
-                #28a745 0%, 
-                #28a745 10%, 
-                #ffc107 10%, 
-                #ffc107 30%, 
-                #fd7e14 30%, 
-                #fd7e14 60%, 
-                #dc3545 60%, 
-                #dc3545 100%);
-            padding: 15px;
-            border-radius: 15px;
-            overflow-x: auto;
-            overflow-y: hidden;
+            gap: 10px;
             position: relative;
-            min-height: 120px;
-            -webkit-overflow-scrolling: touch;
+            padding: 10px 0;
         }
 
         .timeline-item {
             flex: 0 0 auto;
-            text-align: center;
-            padding: 10px;
-            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            padding: 12px;
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            min-width: 100px;
             cursor: pointer;
-            border-radius: 10px;
+            transition: all 0.3s;
+            position: relative;
         }
 
         .timeline-item:hover {
-            background: rgba(255, 255, 255, 0.3);
-            transform: scale(1.1);
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
 
         .timeline-item.active {
-            background: rgba(255, 255, 255, 0.5);
-            transform: scale(1.15);
-            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
-        }
-
-        .timeline-emoji {
-            font-size: 3em;
-            margin-bottom: 5px;
-            display: block;
-        }
-
-        .timeline-energy {
-            font-size: 0.75em;
-            font-weight: bold;
-            color: #fff;
-            background: rgba(0,0,0,0.4);
-            padding: 3px 8px;
-            border-radius: 12px;
-            white-space: nowrap;
-        }
-
-        .current-marker {
-            position: absolute;
-            bottom: -35px;
-            left: 0;
-            transition: left 0.3s ease;
-            text-align: center;
-            z-index: 10;
-        }
-
-        .marker-arrow {
-            font-size: 2em;
-            color: #00A8E9;
-            animation: bounce 1s infinite;
-        }
-
-        .marker-label {
-            font-size: 0.75em;
-            font-weight: bold;
-            color: #00A8E9;
-            white-space: nowrap;
-        }
-
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-5px); }
-        }
-
-        .current-equivalence {
+            border-color: #00A8E9;
             background: linear-gradient(135deg, #00A8E9 0%, #000E47 100%);
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+            color: white;
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 6px 20px rgba(0,168,233,0.4);
         }
 
-        .equivalence-display-large {
-            background: white;
-            padding: 30px;
-            border-radius: 15px;
-            display: flex;
-            align-items: center;
-            gap: 30px;
-            min-height: 150px;
+        .timeline-icon {
+            font-size: 2em;
         }
 
-        .equivalence-icon-large {
-            font-size: 5em;
-            flex-shrink: 0;
-        }
-
-        .equivalence-text-large {
-            font-size: 1.5em;
-            font-weight: bold;
-            color: #495057;
-            line-height: 1.4;
-        }
-
-        .results {
-            background: #f8f9fa;
-            padding: 25px;
-            border-radius: 15px;
-        }
-
-        .results h2 {
-            color: #495057;
-            margin-bottom: 15px;
+        .timeline-label {
+            font-size: 0.75em;
             text-align: center;
+            font-weight: 600;
         }
 
-        .energy-display {
-            text-align: center;
-            font-size: 1.8em;
-            font-weight: bold;
-            color: #00A8E9;
-            margin-bottom: 20px;
+        .timeline-marker {
+            position: absolute;
+            bottom: -15px;
+            width: 80px;
+            height: 5px;
+            background: #00A8E9;
+            border-radius: 3px;
+            transition: left 0.3s;
+            box-shadow: 0 2px 8px rgba(0,168,233,0.4);
         }
 
-        .damage-levels {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 15px;
+        /* Responsive Design */
+        @media (max-width: 1400px) {
+            .container {
+                max-width: 100%;
+            }
+            
+            .top-section {
+                grid-template-columns: 280px 1fr;
+            }
         }
 
-        .damage-card {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            text-align: center;
-            border: 3px solid transparent;
-            transition: all 0.3s;
-        }
-
-        .damage-card.active {
-            transform: scale(1.05);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        }
-
-        .damage-card.slight { border-color: #28a745; }
-        .damage-card.slight.active { background: #d4edda; }
-
-        .damage-card.minor { border-color: #ffc107; }
-        .damage-card.minor.active { background: #fff3cd; }
-
-        .damage-card.major { border-color: #fd7e14; }
-        .damage-card.major.active { background: #ffe5d0; }
-
-        .damage-card.fatality { border-color: #dc3545; }
-        .damage-card.fatality.active { background: #f8d7da; }
-
-        .damage-icon {
-            font-size: 3em;
-            margin-bottom: 10px;
-        }
-
-        .damage-title {
-            font-weight: bold;
-            font-size: 1.2em;
-            margin-bottom: 10px;
-        }
-
-        .damage-description {
-            font-size: 0.9em;
-            color: #6c757d;
-            line-height: 1.6;
-        }
-
-        .energy-threshold {
-            font-size: 0.8em;
-            color: #868e96;
-            margin-top: 8px;
-        }
-
-        .animate-fall {
-            animation: fall linear;
-        }
-
-        @keyframes fall {
-            from { top: var(--start-height); }
-            to { top: calc(100% - 140px); }
-        }
-
-        /* Responsive - Tablette */
-        @media (max-width: 1200px) {
+        @media (max-width: 1024px) {
             .top-section {
                 grid-template-columns: 1fr;
             }
-            .damage-levels {
-                grid-template-columns: 1fr 1fr;
+            
+            .left-column {
+                order: 2;
+            }
+            
+            .visualization-container {
+                order: 1;
+                height: 500px;
+            }
+            
+            .bottom-tables {
+                grid-template-columns: 1fr;
             }
         }
 
-        /* Responsive - Mobile */
         @media (max-width: 768px) {
-            /* Afficher la navigation mobile */
+            body {
+                padding: 5px;
+            }
+
             .mobile-nav {
                 display: block;
             }
 
-            /* Cacher le header desktop */
-            .header {
-                display: none;
-            }
-
-            body {
-                padding: 0;
-                padding-top: 120px;
-            }
-
             .container {
-                border-radius: 0;
-                box-shadow: none;
+                border-radius: 15px;
+                margin-top: 140px;
+            }
+
+            .header {
+                padding: 20px 15px;
+            }
+
+            .header-top {
+                flex-direction: column;
+                gap: 15px;
+                min-height: auto;
+            }
+
+            .header-logo {
+                height: 60px;
+            }
+
+            .header h1 {
+                font-size: 1.5em;
+            }
+
+            .header p {
+                font-size: 0.9em;
+            }
+
+            .header-description {
+                font-size: 0.85em;
+            }
+
+            /* Hide stats inside visualization on mobile */
+            .visualization-container .stats-display {
+                display: none !important;
+            }
+
+            /* Show stats above visualization on mobile */
+            .stats-display-mobile {
+                display: block !important;
+            }
+
+            .stat-row {
+                gap: 8px;
             }
 
             .main-grid {
-                padding: 10px;
-                gap: 15px;
-            }
-
-            /* Système de sections */
-            .section-mobile {
-                display: none;
-                animation: fadeIn 0.3s ease;
-            }
-
-            .section-mobile.active {
-                display: block;
-            }
-
-            @keyframes fadeIn {
-                from {
-                    opacity: 0;
-                    transform: translateY(20px);
-                }
-                to {
-                    opacity: 1;
-                    transform: translateY(0);
-                }
-            }
-
-            .top-section {
-                grid-template-columns: 1fr;
-                gap: 15px;
-            }
-
-            .control-group {
                 padding: 15px;
-                margin-bottom: 15px;
+                gap: 15px;
             }
 
-            .control-group label {
-                font-size: 1em;
+            .preset-buttons {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
             }
 
-            .value-display {
-                font-size: 1.5em;
-            }
-
-            .presets-grid {
-                grid-template-columns: repeat(3, 1fr);
-                gap: 6px;
-            }
-
-            .preset-btn {
-                padding: 8px 4px;
-            }
-
-            .preset-icon {
-                font-size: 1.5em;
-                margin-bottom: 2px;
-            }
-
-            .preset-name {
-                font-size: 0.65em;
-                line-height: 1.1;
-            }
-
-            .preset-weight {
-                font-size: 0.6em;
-                margin-top: 2px;
-            }
-
-            .visualization {
+            .visualization-container {
                 height: 400px;
-                margin-bottom: 15px;
-            }
-
-            .height-reference {
-                right: 10px !important;
-            }
-
-            .reference-icon {
-                font-size: 2em;
-            }
-
-            .reference-label {
-                font-size: 0.6em;
-                padding: 2px 4px;
-            }
-
-            .reference-line-horizontal {
-                width: 30px;
-            }
-
-            .btn-simulate {
-                width: 100%;
-                padding: 15px;
-                font-size: 1.1em;
-                margin-bottom: 15px;
-            }
-
-            .warning {
-                font-size: 0.85em;
-                padding: 12px;
-            }
-
-            .equivalence-timeline-section {
-                padding: 15px;
-                margin-bottom: 15px;
-            }
-
-            .equivalence-timeline-section h2 {
-                font-size: 1.3em;
-                margin-bottom: 15px;
-            }
-
-            .timeline-track {
                 padding: 10px;
-                min-height: 90px;
-            }
-
-            .timeline-item {
-                padding: 5px;
-                min-width: 70px;
-            }
-
-            .timeline-emoji {
-                font-size: 2em;
-            }
-
-            .timeline-energy {
-                font-size: 0.65em;
-            }
-
-            .current-equivalence {
-                padding: 15px;
-            }
-
-            .equivalence-display-large {
-                flex-direction: column;
-                text-align: center;
-                padding: 20px;
-                gap: 15px;
-            }
-
-            .equivalence-icon-large {
-                font-size: 3.5em;
-            }
-
-            .equivalence-text-large {
-                font-size: 1.1em;
-            }
-
-            .results {
-                padding: 15px;
-            }
-
-            .results h2 {
-                font-size: 1.3em;
-            }
-
-            .energy-display {
-                font-size: 1.5em;
-                padding: 15px;
-                margin-bottom: 15px;
-            }
-
-            .damage-levels {
-                grid-template-columns: 1fr;
-                gap: 10px;
-            }
-
-            .damage-card {
-                padding: 15px;
-            }
-
-            .damage-icon {
-                font-size: 2.5em;
-            }
-
-            .damage-title {
-                font-size: 1.1em;
-            }
-
-            .damage-description {
-                font-size: 0.85em;
-            }
-
-            .energy-threshold {
-                font-size: 0.75em;
             }
 
             .falling-object {
-                width: 50px;
-                height: 50px;
-                font-size: 1.8em;
-                left: 30%;
+                font-size: 2em;
             }
 
             .person {
                 font-size: 2.5em;
-                left: 30%;
             }
 
-            .impact-effect {
-                font-size: 2.5em;
-                bottom: 130px;
-                left: 30%;
+            .bottom-tables {
+                grid-template-columns: 1fr;
+            }
+
+            .integrated-indicator {
+                padding: 8px 15px;
+                font-size: 0.9em;
+            }
+
+            .indicator-icon {
+                font-size: 1.5em;
+            }
+
+            .indicator-text {
+                font-size: 1em;
+            }
+
+            .indicator-energy {
+                font-size: 0.85em;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 1.2em;
+            }
+
+            .stat-row {
+                gap: 5px;
+                margin-bottom: 3px;
+            }
+
+            .preset-buttons {
+                grid-template-columns: 1fr;
+            }
+
+            .visualization-container {
+                height: 350px;
+            }
+
+            .falling-object {
+                font-size: 1.5em;
+            }
+
+            .person {
+                font-size: 2em;
             }
 
             .speech-bubble {
-                font-size: 0.9em;
-                padding: 10px 15px;
-                bottom: 180px;
-                left: 30%;
+                font-size: 0.8em;
+                max-width: 150px;
+                padding: 8px 12px;
             }
 
-            .speech-bubble::after {
-                border-left: 10px solid transparent;
-                border-right: 10px solid transparent;
-                border-top: 15px solid #000;
-                bottom: -15px;
+            .integrated-indicator {
+                flex-direction: column;
+                text-align: center;
+                gap: 5px;
+                padding: 8px 12px;
             }
 
-            .speech-bubble::before {
-                border-left: 8px solid transparent;
-                border-right: 8px solid transparent;
-                border-top: 12px solid white;
-                bottom: -11px;
-            }
-
-            .florent-label {
-                font-size: 0.7em;
-                padding: 3px 8px;
-                bottom: 30px;
-            }
-
-            .lightning-easter-egg {
-                font-size: 0.9em;
+            .indicator-energy {
+                border-left: none;
+                border-top: 2px solid rgba(255,255,255,0.5);
+                padding-left: 0;
+                padding-top: 5px;
+                margin-left: 0;
             }
         }
     </style>
 </head>
 <body>
-    <!-- Navigation mobile (visible uniquement sur mobile) -->
+    <!-- Mobile Navigation -->
     <div class="mobile-nav">
         <div class="header-logos-mobile">
-            <img src="./logo_cou.png" alt="Logo COU" class="header-logo-mobile" onerror="this.style.display='none'">
-            <img src="./logo_drop.png" alt="Logo Drop" class="header-logo-mobile" onerror="this.style.display='none'">
+            <img src="https://via.placeholder.com/120x50?text=EDF+Logo" alt="EDF Logo" class="header-logo-mobile">
+            <img src="https://via.placeholder.com/120x50?text=Safety+Logo" alt="Safety Logo" class="header-logo-mobile">
         </div>
-        <div class="nav-title">⚠️ Falling Object Simulator <span class="lightning-easter-egg" onclick="triggerLightning()">⚡</span></div>
+        <div class="nav-title">📦 Falling Object Impact Simulator</div>
         <div class="nav-buttons">
-            <button class="nav-btn active" onclick="showSection('controls')">⚙️ Controls</button>
-            <button class="nav-btn" onclick="showSection('impact')">🔥 Impact</button>
-            <button class="nav-btn" onclick="showSection('results')">📊 Results</button>
+            <button class="nav-btn active" onclick="showSection('controls')">🎮 Controls</button>
+            <button class="nav-btn" onclick="showSection('visualization')">📊 Visualization</button>
+            <button class="nav-btn" onclick="showSection('severity')">⚠️ Severity Levels</button>
+            <button class="nav-btn" onclick="showSection('equivalence')">📈 Energy Equivalence</button>
         </div>
     </div>
 
     <div class="container">
-        <!-- Header desktop (caché sur mobile) -->
+        <!-- Header -->
         <div class="header">
-            <img src="./logo_cou.png" alt="Logo" class="header-logo" onerror="this.style.display='none'">
-            <div class="header-content">
-                <h1>⚠️ Dropped Object Impact Simulator <span class="lightning-easter-egg" onclick="triggerLightning()">⚡</span></h1>
-                <p>Understand the hazards of objects at height</p>
-                <p>Based on <a href="https://www.dropsonline.org/drops-guidance-and-resources/drops-calculator" target="_blank" style="color: #0066cc; text-decoration: underline;">DROPS Calculator</a></p>
-                <p>This tool is made for educational purposes</p>
-                <p>Help yourself to assess and visualize the consequences of dropped object</p>
+            <div class="header-top">
+                <img src="https://via.placeholder.com/200x80?text=EDF+Renouvelables" alt="EDF Logo" class="header-logo">
+                <div class="header-content">
+                    <h1>📦 Falling Object Impact Simulator</h1>
+                    <p>Understand the impact of falling objects <span class="lightning-easter-egg" id="lightningEgg" title="Click for a surprise!">⚡</span></p>
+                    <div class="header-description">
+                        Explore the dangers of falling objects in professional environments
+                    </div>
+                </div>
+                <img src="https://via.placeholder.com/200x80?text=Safety+First" alt="Safety Logo" class="header-logo">
             </div>
-            <img src="./logo_drop.png" alt="Logo" class="header-logo" width="400" height="400" onerror="this.style.display='none'">
         </div>
 
+        <!-- Main Content -->
         <div class="main-grid">
-            <!-- Section Controls & Simulation (mobile: section 1) -->
-            <div class="top-section section-mobile active" id="controls">
+            <div class="top-section">
+                <!-- Left Column: Controls -->
                 <div class="left-column">
                     <div class="controls">
+                        <!-- Height Control -->
                         <div class="control-group">
-                            <label>💪 Object Weight</label>
-                            <input type="range" id="weight" min="0.01" max="150" step="0.1" value="2">
-                            <div class="weight-inputs">
-                                <div class="weight-input-field">
-                                    <label>Kilograms</label>
-                                    <input type="number" id="weightKg" min="0.01" max="150" step="0.1" value="2.0">
-                                </div>
-                                <div class="weight-input-field">
-                                    <label>Grams</label>
-                                    <input type="number" id="weightGrams" min="10" max="150000" step="10" value="2000">
-                                </div>
+                            <label>📏 Drop Height</label>
+                            <div class="slider-container">
+                                <input type="range" id="heightInput" min="0.1" max="50" step="0.1" value="2">
+                                <span class="height-value" id="heightValue">2.0 m</span>
                             </div>
                         </div>
 
-                        <div class="presets-section">
-                            <div class="presets-header" onclick="togglePresets()">
-                                <h3>🔧 Common Objects</h3>
-                                <span class="collapse-icon collapsed" id="collapseIcon">▼</span>
-                            </div>
-                            <div class="presets-content collapsed" id="presetsContent">
-                                <div class="presets-grid" id="presetsGrid"></div>
-                            </div>
-                        </div>
-
+                        <!-- Presets -->
                         <div class="control-group">
-                            <label>📏 Drop Height (m)</label>
-                            <input type="range" id="height" min="0.5" max="100" step="0.5" value="20">
-                            <div class="value-display" id="heightValue">20.0 m</div>
+                            <div class="collapsible-header" id="presetsHeader" onclick="togglePresets()">
+                                <label>⚙️ Predefined Objects</label>
+                                <span class="collapsible-arrow">▼</span>
+                            </div>
+                            <div class="collapsible-content" id="presetsContent">
+                                <div class="preset-buttons" id="presetButtons"></div>
+                            </div>
                         </div>
 
-                        <button class="btn-simulate" onclick="simulateFall()">
-                            🚀 Run Simulation
+                        <!-- Custom Weight -->
+                        <div class="custom-weight-group">
+                            <label>⭐ Custom Weight</label>
+                            <div class="custom-weight-input">
+                                <input type="number" id="customWeightInput" min="0.01" max="100" step="0.01" placeholder="1.0">
+                                <span class="custom-weight-unit">kg</span>
+                            </div>
+                            <div class="custom-icon">⚫</div>
+                        </div>
+
+                        <!-- Simulate Button -->
+                        <button class="simulate-btn" onclick="simulateFall()">
+                            🎬 Run Simulation
                         </button>
-
-                        <div class="warning">
-                            ⚠️ Even small objects can cause serious injuries!
-                        </div>
                     </div>
                 </div>
 
-                <div class="right-column">
-                    <div class="visualization" id="visualization">
+                <!-- Right Column: Visualization -->
+                <div class="visualization-container">
+                    <!-- Mobile Stats - Above Visualization -->
+                    <div class="stats-display-mobile">
+                        <div class="stat-row total">
+                            <span class="stat-label">🎯 Total:</span>
+                            <span class="stat-value" id="totalSimulationsMobile">0</span>
+                        </div>
+                        <div class="stat-row safe">
+                            <span class="stat-label">✅ Safe:</span>
+                            <span class="stat-value" id="safeSimulationsMobile">0</span>
+                        </div>
+                        <div class="stat-row lives">
+                            <span class="stat-label">🛡️ Lives:</span>
+                            <span class="stat-value" id="preventedDeathsMobile">0</span>
+                        </div>
+                        <div class="stat-row injuries">
+                            <span class="stat-label">🏥 Injuries:</span>
+                            <span class="stat-value" id="preventedInjuriesMobile">0</span>
+                        </div>
+                    </div>
+                    
+                    <div id="visualization">
                         <div class="height-scale" id="heightScale"></div>
-                        <!-- Height references container -->
-                        <div class="height-references-container" id="heightReferencesContainer">
-                            <div class="height-reference" id="ref-arc">
-                                <div class="reference-line-horizontal"></div>
-                                <div class="reference-icon">🏛</div>
-                                <div class="reference-label">Arc Triomphe<br>50m</div>
+                        
+                        <!-- Stats Display Top Right -->
+                        <div class="stats-display">
+                            <div class="stat-row total">
+                                <span class="stat-label">🎯 Total Simulations:</span>
+                                <span class="stat-value" id="totalSimulations">0</span>
                             </div>
-                            <div class="height-reference" id="ref-crane">
-                                <div class="reference-line-horizontal"></div>
-                                <div class="reference-icon">🏗️</div>
-                                <div class="reference-label">Crane<br>30m</div>
+                            <div class="stat-row safe">
+                                <span class="stat-label">✅ Safe Simulations:</span>
+                                <span class="stat-value" id="safeSimulations">0</span>
                             </div>
-                            <div class="height-reference" id="ref-building">
-                                <div class="reference-line-horizontal"></div>
-                                <div class="reference-icon">🏢</div>
-                                <div class="reference-label">Building<br>10m</div>
+                            <div class="stat-row lives">
+                                <span class="stat-label">🛡️ Lives Saved:</span>
+                                <span class="stat-value" id="preventedDeaths">0</span>
                             </div>
-                            <div class="height-reference" id="ref-truck">
-                                <div class="reference-line-horizontal"></div>
-                                <div class="reference-icon">🚚</div>
-                                <div class="reference-label">Truck<br>3.5m</div>
-                            </div>
-                            <div class="height-reference" id="ref-car">
-                                <div class="reference-line-horizontal"></div>
-                                <div class="reference-icon">🚗</div>
-                                <div class="reference-label">Car<br>1.5m</div>
+                            <div class="stat-row injuries">
+                                <span class="stat-label">🏥 Injuries Prevented:</span>
+                                <span class="stat-value" id="preventedInjuries">0</span>
                             </div>
                         </div>
-                        <div class="falling-object" id="fallingObject">🌻</div>
-                        <div class="person" id="person">🧍</div>
-                        <div class="impact-effect" id="impactEffect">💥</div>
-                        <div class="speech-bubble" id="speechBubble"></div>
-                        <div class="ground"></div>
+                        
+                        <!-- Integrated Damage Indicator -->
+                        <div class="integrated-indicator" id="integratedIndicator">
+                            <div class="indicator-icon" id="indicatorIcon">🤕</div>
+                            <div class="indicator-text" id="indicatorText">Slight</div>
+                            <div class="indicator-energy" id="indicatorEnergy">0 J</div>
+                        </div>
+                        
+                        <div class="falling-object" id="fallingObject">📦</div>
+                        
+                        <!-- Reference items -->
+                        <div class="reference-item" id="ref-car">
+                            <span class="reference-icon">🚗</span>
+                            <span class="reference-label">Car (1.5m)</span>
+                        </div>
+                        <div class="reference-item" id="ref-truck">
+                            <span class="reference-icon">🚚</span>
+                            <span class="reference-label">Truck (3.5m)</span>
+                        </div>
+                        <div class="reference-item" id="ref-building">
+                            <span class="reference-icon">🏢</span>
+                            <span class="reference-label">Building (10m)</span>
+                        </div>
+                        <div class="reference-item" id="ref-crane">
+                            <span class="reference-icon">🏗️</span>
+                            <span class="reference-label">Crane (30m)</span>
+                        </div>
+                        <div class="reference-item" id="ref-arc">
+                            <span class="reference-icon">🎡</span>
+                            <span class="reference-label">Arc de Triomphe (50m)</span>
+                        </div>
+
+                        <div class="ground">
+                            <div class="person" id="person">🧍</div>
+                            <div class="impact-effect" id="impactEffect">💥</div>
+                            <div class="speech-bubble" id="speechBubble">Ouch!</div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Section Impact Force (mobile: section 2) -->
-            <div class="equivalence-timeline-section section-mobile" id="impact">
-                <h2>🔥 Impact Force Scale</h2>
-                <div class="timeline-container">
-                    <div class="timeline-track" id="timelineTrack">
-                        <!-- Timeline items will be generated here -->
+            <!-- Bottom Tables Section -->
+            <div class="bottom-tables">
+                <!-- Severity Levels Table -->
+                <div class="severity-table">
+                    <h3>⚠️ Severity Levels</h3>
+                    <div class="severity-row slight" id="severity-slight">
+                        <div class="severity-icon">🤕</div>
+                        <div class="severity-info">
+                            <div class="severity-title">Slight</div>
+                            <div class="severity-threshold">&lt; 15 J</div>
+                        </div>
                     </div>
-                    <div class="current-marker" id="currentMarker">
-                        <div class="marker-arrow">▼</div>
-                        <div class="marker-label">YOU ARE HERE</div>
+                    <div class="severity-row minor" id="severity-minor">
+                        <div class="severity-icon">😵</div>
+                        <div class="severity-info">
+                            <div class="severity-title">Minor</div>
+                            <div class="severity-threshold">15-50 J</div>
+                        </div>
+                    </div>
+                    <div class="severity-row major" id="severity-major">
+                        <div class="severity-icon">🚑</div>
+                        <div class="severity-info">
+                            <div class="severity-title">Major</div>
+                            <div class="severity-threshold">50-100 J</div>
+                        </div>
+                    </div>
+                    <div class="severity-row fatality" id="severity-fatality">
+                        <div class="severity-icon">💀</div>
+                        <div class="severity-info">
+                            <div class="severity-title">Fatality</div>
+                            <div class="severity-threshold">&gt; 100 J</div>
+                        </div>
                     </div>
                 </div>
-                <div class="current-equivalence">
-                    <div class="equivalence-display-large" id="equivalenceDisplayLarge">
-                        <div class="equivalence-icon-large">🤔</div>
-                        <div class="equivalence-text-large">Adjust parameters to see equivalent force</div>
-                    </div>
-                </div>
-            </div>
 
-            <!-- Section Results (mobile: section 3) -->
-            <div class="results section-mobile" id="results">
-                <h2>📊 Impact Analysis</h2>
-                <div class="energy-display" id="energyDisplay">
-                    Energy: 0 J
-                </div>
-
-                <div class="damage-levels">
-                    <div class="damage-card slight" id="slight">
-                        <div class="damage-icon">🩹</div>
-                        <div class="damage-title">SLIGHT</div>
-                        <div class="damage-description">📋 Clipboard<br>🍎 Apple<br></div>
-                        <div class="energy-threshold">&lt; 15 J</div>
-                    </div>
-
-                    <div class="damage-card minor" id="minor">
-                        <div class="damage-icon">🥼</div>
-                        <div class="damage-title">MINOR</div>
-                        <div class="damage-description">🔨 Hammer<br>🧱 Brick<br>👷 Hard Hat</div>
-                        <div class="energy-threshold">15-50 J</div>
-                    </div>
-
-                    <div class="damage-card major" id="major">
-                        <div class="damage-icon">👨‍🦽</div>
-                        <div class="damage-title">MAJOR</div>
-                        <div class="damage-description">🪓 Axe<br>⚙️ Engine Part<br>🪨 Large Rock</div>
-                        <div class="energy-threshold">50-150 J</div>
-                    </div>
-
-                    <div class="damage-card fatality" id="fatality">
-                        <div class="damage-icon">⚰️</div>
-                        <div class="damage-title">FATALITY</div>
-                        <div class="damage-description">🗜️ Steel Beam<br>⚓ Anchor<br>🪨 Boulder</div>
-                        <div class="energy-threshold">&gt; 150 J</div>
-                    </div>
+                <!-- Energy Equivalence Table -->
+                <div class="equivalence-table">
+                    <h3>📊 Energy Equivalence</h3>
+                    <div id="equivalenceRows"></div>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        const weightInput = document.getElementById('weight');
-        const weightKgInput = document.getElementById('weightKg');
-        const weightGramsInput = document.getElementById('weightGrams');
-        const heightInput = document.getElementById('height');
-        const heightValue = document.getElementById('heightValue');
-        const energyDisplay = document.getElementById('energyDisplay');
-        const fallingObject = document.getElementById('fallingObject');
-        const impactEffect = document.getElementById('impactEffect');
-        const person = document.getElementById('person');
-        const heightScale = document.getElementById('heightScale');
-        const speechBubble = document.getElementById('speechBubble');
-
-        let currentWeight = 2;
-        let currentHeight = 20;
-        let isUpdating = false;
-        let isMobile = window.innerWidth <= 768;
-
-        // Gravity constant
-        const g = 9.81;
-
-        // Speech bubble messages by damage level
-        const SPEECH_BUBBLES = {
-            slight: ["Ouch!", "That hurts!", "Ow ow ow!", "Hey, watch it!"],
-            minor: ["I need help!", "MEDIC!", "Call someone!", "This is bad!"],
-            major: ["CALL AN AMBULANCE!", "EMERGENCY!", "HELP ME NOW!", "I'M SERIOUSLY HURT!"],
-            fatality: ["RIP... 💀", "☠️", "Game Over...", "..."]
-        };
-
-        // Object presets (weight in kg)
-        const PRESETS = [
-            { name: '12mm Wrench', icon: '🔧', weight: 0.15, emoji: '🔧' },
-            { name: 'Bolt M10', icon: '🔩', weight: 0.05, emoji: '🔩' },
-            { name: 'iPhone', icon: '📱', weight: 0.2, emoji: '📱' },
-            { name: 'Safety Helmet', icon: '⛑️', weight: 0.4, emoji: '⛑️' },
-            { name: 'Flower Pot', icon: '🌻', weight: 2.0, emoji: '🌻' },
-            { name: 'Work Boot', icon: '🥾', weight: 1.2, emoji: '🥾' },
-            { name: 'Hammer', icon: '🔨', weight: 0.5, emoji: '🔨' },
-            { name: 'Screwdriver', icon: '🪛', weight: 0.2, emoji: '🪛' },
-            { name: 'Wood Plank', icon: '🪵', weight: 2.5, emoji: '🪵' },
-            { name: 'Brick', icon: '🧱', weight: 3.5, emoji: '🧱' },
-            { name: 'Water Bottle', icon: '🧴', weight: 1.0, emoji: '🧴' },
-            { name: 'Drill', icon: '⚙️', weight: 1.8, emoji: '⚙️' },
-            { name: 'Adjustable Wrench', icon: '🔧', weight: 0.35, emoji: '🔧' },
-            { name: 'Paint Can', icon: '🪣', weight: 5.0, emoji: '🪣' },
-            { name: 'Steel Pipe', icon: '🛠️', weight: 4.0, emoji: '🛠️' },
-            { name: 'Clipboard', icon: '📋', weight: 0.3, emoji: '📋' }
-        ];
-
-        // Energy thresholds (in Joules)
+        // Constants
+        const g = 9.81; // m/s²
+        
         const THRESHOLDS = {
             slight: 15,
             minor: 50,
-            major: 150
+            major: 100
         };
 
-        // Relatable equivalences
-        const EQUIVALENCES = [
-            { maxEnergy: 5, icon: '🤝', text: 'A friendly tap' },
-            { maxEnergy: 10, icon: '👋', text: 'A pat on the shoulder' },
-            { maxEnergy: 15, icon: '🥊', text: 'A light punch (amateur boxing)' },
-            { maxEnergy: 30, icon: '⚾', text: 'A baseball thrown at 50 km/h' },
-            { maxEnergy: 50, icon: '🏏', text: 'A cricket bat swing' },
-            { maxEnergy: 80, icon: '⚽', text: 'A professional soccer kick' },
-            { maxEnergy: 120, icon: '🥋', text: 'A black belt karate chop' },
-            { maxEnergy: 150, icon: '🏈', text: 'A rugby tackle' },
-            { maxEnergy: 250, icon: '🐘', text: 'An elephant stepping on you' },
-            { maxEnergy: 400, icon: '🥊', text: 'A Mike Tyson uppercut' },
-            { maxEnergy: 600, icon: '🏍️', text: 'A motorcycle crash at 30 km/h' },
-            { maxEnergy: 900, icon: '🚗', text: 'A low-speed car impact' },
-            { maxEnergy: 1500, icon: '💥', text: 'A car crash at 50 km/h' },
-            { maxEnergy: Infinity, icon: '☠️', text: 'A potentially lethal force' }
+        const PRESETS = [
+            { icon: '🔩', label: 'Bolt', weight: 0.05, desc: '50g' },
+            { icon: '🔧', label: 'Wrench', weight: 0.5, desc: '500g' },
+            { icon: '🔨', label: 'Hammer', weight: 1, desc: '1kg' },
+            { icon: '📱', label: 'Phone', weight: 0.2, desc: '200g' },
+            { icon: '⚙️', label: 'Heavy Tool', weight: 2, desc: '2kg' },
+            { icon: '🪣', label: 'Bucket', weight: 0.3, desc: '300g' },
+            { icon: '🧰', label: 'Toolbox', weight: 5, desc: '5kg' },
+            { icon: '⛑️', label: 'Helmet', weight: 1.5, desc: '1.5kg' }
         ];
 
-        // Navigation mobile
-        function showSection(sectionId) {
-            if (!isMobile) return; // Ne fonctionne que sur mobile
+        const EQUIVALENCES = [
+            { maxEnergy: 1, icon: '🪶', text: 'Falling feather' },
+            { maxEnergy: 3, icon: '🍃', text: 'Falling leaf' },
+            { maxEnergy: 5, icon: '🎈', text: 'Party balloon drop' },
+            { maxEnergy: 10, icon: '🏓', text: 'Ping pong ball impact' },
+            { maxEnergy: 15, icon: '🎾', text: 'Tennis ball throw' },
+            { maxEnergy: 20, icon: '⚾', text: 'Baseball throw' },
+            { maxEnergy: 30, icon: '🏀', text: 'Basketball impact' },
+            { maxEnergy: 40, icon: '🥎', text: 'Softball hit' },
+            { maxEnergy: 50, icon: '🥊', text: 'Amateur boxer punch' },
+            { maxEnergy: 70, icon: '🎯', text: 'Dart board impact' },
+            { maxEnergy: 100, icon: '🏗️', text: 'Small construction tool' },
+            { maxEnergy: 150, icon: '🔨', text: 'Heavy hammer blow' },
+            { maxEnergy: 200, icon: '🚗', text: 'Low-speed car bump' },
+            { maxEnergy: 300, icon: '🏋️', text: 'Dropped weight plate' },
+            { maxEnergy: 400, icon: '🛠️', text: 'Heavy machinery part' },
+            { maxEnergy: 500, icon: '💥', text: 'Severe construction accident' },
+            { maxEnergy: 750, icon: '⚠️', text: 'Critical injury zone' },
+            { maxEnergy: 1000, icon: '🚨', text: 'Extreme danger level' },
+            { maxEnergy: 1500, icon: '☠️', text: 'Fatal impact zone' },
+            { maxEnergy: Infinity, icon: '💀', text: 'Catastrophic - Maximum risk' }
+        ];
 
-            // Masquer toutes les sections
-            document.querySelectorAll('.section-mobile').forEach(section => {
-                section.classList.remove('active');
-            });
-            
-            // Désactiver tous les boutons
-            document.querySelectorAll('.nav-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            
-            // Activer la section demandée
-            document.getElementById(sectionId).classList.add('active');
-            
-            // Activer le bouton correspondant
-            if (event && event.target) {
-                event.target.classList.add('active');
+        const SPEECH_BUBBLES = {
+            slight: ['Ouch!', 'That hurts!', 'Oops!', 'Watch out!'],
+            minor: ['Ow ow!', 'That really hurts!', 'I\'m hurt!', 'Call for help!'],
+            major: ['AAAAH!', 'Help!', 'I\'m injured!', 'Medical emergency!'],
+            fatality: ['...', 'Fatal accident', 'Too late...', '💀']
+        };
+
+        // Safety counter
+        let safetyStats = {
+            preventedDeaths: 0,
+            preventedInjuries: 0,
+            safeSimulations: 0,
+            totalSimulations: 0
+        };
+
+        // Load stats from localStorage
+        function loadStats() {
+            const saved = localStorage.getItem('safetyStats');
+            if (saved) {
+                safetyStats = JSON.parse(saved);
+                updateStatsDisplay();
             }
-            
-            // Scroll vers le haut
-            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        // Toggle presets collapse
-        function togglePresets() {
-            const content = document.getElementById('presetsContent');
-            const icon = document.getElementById('collapseIcon');
+        // Save stats to localStorage
+        function saveStats() {
+            localStorage.setItem('safetyStats', JSON.stringify(safetyStats));
+        }
+
+        // Update stats display
+        function updateStatsDisplay() {
+            // Desktop stats
+            document.getElementById('totalSimulations').textContent = safetyStats.totalSimulations;
+            document.getElementById('preventedInjuries').textContent = safetyStats.preventedInjuries;
+            document.getElementById('safeSimulations').textContent = safetyStats.safeSimulations;
+            document.getElementById('preventedDeaths').textContent = safetyStats.preventedDeaths;
             
+            // Mobile stats
+            document.getElementById('totalSimulationsMobile').textContent = safetyStats.totalSimulations;
+            document.getElementById('preventedInjuriesMobile').textContent = safetyStats.preventedInjuries;
+            document.getElementById('safeSimulationsMobile').textContent = safetyStats.safeSimulations;
+            document.getElementById('preventedDeathsMobile').textContent = safetyStats.preventedDeaths;
+        }
+
+        // Update stats after simulation
+        function updateStats(damageLevel) {
+            safetyStats.totalSimulations++;
+            
+            if (damageLevel === 'fatality') {
+                safetyStats.preventedDeaths++;
+            } else if (damageLevel === 'major' || damageLevel === 'minor') {
+                safetyStats.preventedInjuries++;
+            } else {
+                safetyStats.safeSimulations++;
+            }
+            
+            updateStatsDisplay();
+            saveStats();
+        }
+
+        // DOM elements
+        const heightInput = document.getElementById('heightInput');
+        const heightValue = document.getElementById('heightValue');
+        const customWeightInput = document.getElementById('customWeightInput');
+        const fallingObject = document.getElementById('fallingObject');
+        const person = document.getElementById('person');
+        const impactEffect = document.getElementById('impactEffect');
+        const speechBubble = document.getElementById('speechBubble');
+        const heightScale = document.getElementById('heightScale');
+
+        let currentWeight = 1; // kg
+        let currentHeight = 2; // m
+        let isMobile = window.innerWidth <= 768;
+
+        // Custom weight input handler
+        customWeightInput.addEventListener('input', () => {
+            const value = parseFloat(customWeightInput.value);
+            if (value && value > 0) {
+                currentWeight = value;
+                fallingObject.textContent = '⚫';
+                updateDisplay();
+            }
+        });
+
+        // Toggle presets collapsible
+        function togglePresets() {
+            const header = document.getElementById('presetsHeader');
+            const content = document.getElementById('presetsContent');
+            header.classList.toggle('collapsed');
             content.classList.toggle('collapsed');
-            icon.classList.toggle('collapsed');
         }
 
         // Create preset buttons
         function createPresets() {
-            const grid = document.getElementById('presetsGrid');
-            PRESETS.forEach((preset, index) => {
+            const container = document.getElementById('presetButtons');
+            PRESETS.forEach(preset => {
                 const btn = document.createElement('button');
                 btn.className = 'preset-btn';
                 btn.innerHTML = `
-                    <div class="preset-icon">${preset.emoji}</div>
-                    <div class="preset-name">${preset.name}</div>
-                    <div class="preset-weight">${preset.weight < 1 ? (preset.weight * 1000).toFixed(0) + 'g' : preset.weight.toFixed(1) + 'kg'}</div>
+                    <span class="preset-icon">${preset.icon}</span>
+                    <div class="preset-label">${preset.label}</div>
+                    <div class="preset-weight">${preset.desc}</div>
                 `;
-                btn.onclick = () => selectPreset(preset, btn);
-                grid.appendChild(btn);
+                btn.onclick = () => {
+                    currentWeight = preset.weight;
+                    fallingObject.textContent = preset.icon;
+                    customWeightInput.value = ''; // Clear custom input
+                    updateDisplay();
+                };
+                container.appendChild(btn);
             });
         }
 
-        // Select preset
-        function selectPreset(preset, button) {
-            document.querySelectorAll('.preset-btn').forEach(btn => btn.classList.remove('active'));
-            button.classList.add('active');
-            setWeight(preset.weight);
-            fallingObject.textContent = preset.emoji;
-        }
-
-        // Set weight from various sources
-        function setWeight(kg) {
-            if (isUpdating) return;
-            isUpdating = true;
-            
-            currentWeight = kg;
-            weightInput.value = kg;
-            weightKgInput.value = kg.toFixed(2);
-            weightGramsInput.value = Math.round(kg * 1000);
-            
-            isUpdating = false;
-            updateDisplay();
-        }
-
-        // Update weight from slider
-        weightInput.addEventListener('input', () => {
-            if (isUpdating) return;
-            setWeight(parseFloat(weightInput.value));
-            clearPresetSelection();
-        });
-
-        // Update weight from kg input
-        weightKgInput.addEventListener('input', () => {
-            if (isUpdating) return;
-            const kg = parseFloat(weightKgInput.value) || 0.01;
-            setWeight(Math.max(0.01, Math.min(150, kg)));
-            clearPresetSelection();
-        });
-
-        // Update weight from grams input
-        weightGramsInput.addEventListener('input', () => {
-            if (isUpdating) return;
-            const grams = parseFloat(weightGramsInput.value) || 10;
-            const kg = grams / 1000;
-            setWeight(Math.max(0.01, Math.min(150, kg)));
-            clearPresetSelection();
-        });
-
-        // Clear preset selection
-        function clearPresetSelection() {
-            document.querySelectorAll('.preset-btn').forEach(btn => btn.classList.remove('active'));
-            fallingObject.textContent = '🌻';
-        }
-
-        // Easter egg: Lightning strike!
-        function triggerLightning() {
-            // Stop any ongoing animation
-            fallingObject.style.animation = 'none';
-            impactEffect.classList.remove('show');
-            speechBubble.classList.remove('show');
-            
-            // Reset person
-            person.textContent = '🧍';
-            person.classList.remove('electrocuted');
-            
-            // Force reflow
-            void person.offsetWidth;
-            
-            // Apply electrocution effect
-            person.classList.add('electrocuted');
-            
-            // Show lightning impact after a brief moment
-            setTimeout(() => {
-                impactEffect.textContent = '⚡';
-                impactEffect.classList.add('show');
-                
-                // Change to electrocuted state
-                person.textContent = '😵';
-                
-                // Show speech bubble
-                const electricMessages = [
-                    "ZZZZAP! ⚡",
-                    "I'm SHOCKED!",
-                    "That was ELECTRIFYING!",
-                    "OUCH! ⚡⚡⚡",
-                    "I didn't see that coming!"
-                ];
-                const randomMessage = electricMessages[Math.floor(Math.random() * electricMessages.length)];
-                speechBubble.textContent = randomMessage;
-                speechBubble.classList.add('show');
-                
-                // After effect, show burned/dead state
-                setTimeout(() => {
-                    person.textContent = '🪦';
-                    impactEffect.textContent = '💀';
-                    speechBubble.textContent = "I'm toast... 🔥";
-                    
-                    // Remove effects after some time
-                    setTimeout(() => {
-                        impactEffect.classList.remove('show');
-                        speechBubble.classList.remove('show');
-                        person.classList.remove('electrocuted');
-                        person.textContent = '🧍';
-                        impactEffect.textContent = '💥';
-                    }, 2500);
-                }, 1000);
-            }, 300);
-        }
-
-        // Create equivalence timeline
-        function createTimeline() {
-            const track = document.getElementById('timelineTrack');
-            track.innerHTML = '';
+        // Create equivalence rows
+        function createEquivalenceRows() {
+            const container = document.getElementById('equivalenceRows');
+            container.innerHTML = '';
             
             EQUIVALENCES.forEach((equiv, index) => {
-                const item = document.createElement('div');
-                item.className = 'timeline-item';
-                item.innerHTML = `
-                    <span class="timeline-emoji">${equiv.icon}</span>
-                    <span class="timeline-energy">${equiv.maxEnergy === Infinity ? '150+' : equiv.maxEnergy}J</span>
+                const row = document.createElement('div');
+                row.className = 'equivalence-row';
+                row.dataset.maxEnergy = equiv.maxEnergy;
+                row.innerHTML = `
+                    <div class="equivalence-icon">${equiv.icon}</div>
+                    <div class="equivalence-info">
+                        <div class="equivalence-label">${equiv.text}</div>
+                        <div class="equivalence-energy">${equiv.maxEnergy === Infinity ? '1500+' : '≤ ' + equiv.maxEnergy} J</div>
+                    </div>
                 `;
-                item.title = equiv.text;
-                track.appendChild(item);
+                container.appendChild(row);
             });
         }
 
-        // Update timeline marker position
-        function updateTimeline(energy) {
-            const track = document.getElementById('timelineTrack');
-            const marker = document.getElementById('currentMarker');
-            const items = track.querySelectorAll('.timeline-item');
+        // Update equivalence rows
+        function updateEquivalenceRows(energy) {
+            const rows = document.querySelectorAll('.equivalence-row');
             
-            // Remove active class from all items
-            items.forEach(item => item.classList.remove('active'));
+            // Remove all active classes
+            rows.forEach(row => row.classList.remove('active'));
             
-            // Find current equivalence index
+            // Find current equivalence
             let currentIndex = 0;
-            for (let i = 0; i < EQUIVALENCES.length; i++) {
-                if (energy <= EQUIVALENCES[i].maxEnergy) {
+            for (let i = 0; i < rows.length; i++) {
+                const maxEnergy = parseFloat(rows[i].dataset.maxEnergy);
+                if (energy <= maxEnergy) {
                     currentIndex = i;
                     break;
                 }
             }
             
-            // Add active class to current item
-            if (items[currentIndex]) {
-                items[currentIndex].classList.add('active');
+            // Add active class to current equivalence
+            if (rows[currentIndex]) {
+                rows[currentIndex].classList.add('active');
                 
-                // Position marker
-                const itemRect = items[currentIndex].getBoundingClientRect();
-                const trackRect = track.getBoundingClientRect();
-                const markerLeft = itemRect.left - trackRect.left + (itemRect.width / 2) - 40;
-                marker.style.left = markerLeft + 'px';
+                // Scroll to center the active element
+                const container = document.getElementById('equivalenceRows');
+                const activeRow = rows[currentIndex];
+                const containerHeight = container.offsetHeight;
+                const rowTop = activeRow.offsetTop;
+                const rowHeight = activeRow.offsetHeight;
                 
-                // Scroll item into view if needed
-                items[currentIndex].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                // Calculate scroll position to center the element
+                const scrollPosition = rowTop - (containerHeight / 2) + (rowHeight / 2);
+                container.scrollTo({
+                    top: scrollPosition,
+                    behavior: 'smooth'
+                });
             }
         }
 
@@ -1581,11 +1645,8 @@
 
         // Calculate dynamic max height for visualization scale
         function getDynamicMaxHeight(currentHeight) {
-            // Add 30% margin above current height, rounded up to nearest 10
             const withMargin = currentHeight * 1.3;
             const roundedUp = Math.ceil(withMargin / 10) * 10;
-            
-            // Minimum scale of 10m
             return Math.max(10, roundedUp);
         }
 
@@ -1594,7 +1655,6 @@
             heightScale.innerHTML = '';
             const dynamicMaxHeight = getDynamicMaxHeight(currentHeight);
             
-            // Create marks every 10m or 5m depending on scale
             const marks = [];
             const interval = dynamicMaxHeight <= 20 ? 5 : 10;
             for (let i = 0; i <= dynamicMaxHeight; i += interval) {
@@ -1611,13 +1671,15 @@
                 }
             });
 
-            // Update reference positions based on their actual heights
             const visualizationElement = document.getElementById('visualization');
             const visualizationHeight = visualizationElement.offsetHeight;
             const groundHeight = 80;
             const usableHeight = visualizationHeight - groundHeight;
             
-            // Reference heights in meters
+            // Remove existing height lines
+            const existingLines = visualizationElement.querySelectorAll('.reference-height-line');
+            existingLines.forEach(line => line.remove());
+            
             const references = [
                 { id: 'ref-car', height: 1.5 },
                 { id: 'ref-truck', height: 3.5 },
@@ -1626,19 +1688,22 @@
                 { id: 'ref-arc', height: 50 }
             ];
             
-            // Position each reference at its actual height (only show if within scale)
             references.forEach(ref => {
                 const element = document.getElementById(ref.id);
                 if (element) {
                     if (ref.height <= dynamicMaxHeight) {
-                        // Calculate position from bottom
                         const positionFromBottom = groundHeight + (ref.height / dynamicMaxHeight) * usableHeight;
                         element.style.position = 'absolute';
                         element.style.bottom = positionFromBottom + 'px';
                         element.style.right = '60px';
                         element.style.display = 'flex';
+                        
+                        // Add dotted line for this height
+                        const line = document.createElement('div');
+                        line.className = 'reference-height-line';
+                        line.style.bottom = positionFromBottom + 'px';
+                        visualizationElement.appendChild(line);
                     } else {
-                        // Hide references that are above current scale
                         element.style.display = 'none';
                     }
                 }
@@ -1660,23 +1725,16 @@
 
         // Update display
         function updateDisplay() {
-            currentWeight = parseFloat(weightInput.value);
+            currentWeight = parseFloat(currentWeight);
             currentHeight = parseFloat(heightInput.value);
             
             heightValue.textContent = currentHeight.toFixed(1) + ' m';
             
             const energy = calculateEnergy(currentWeight, currentHeight);
-            energyDisplay.textContent = `Energy: ${energy.toFixed(1)} J`;
+            const damageLevel = getDamageLevel(energy);
             
-            // Update equivalence
-            const equiv = getEquivalence(energy);
-            document.getElementById('equivalenceDisplayLarge').innerHTML = `
-                <div class="equivalence-icon-large">${equiv.icon}</div>
-                <div class="equivalence-text-large">${equiv.text}</div>
-            `;
-            
-            // Update timeline
-            updateTimeline(energy);
+            // Update equivalence rows
+            updateEquivalenceRows(energy);
             
             // Position object based on height with dynamic scale
             const dynamicMaxHeight = getDynamicMaxHeight(currentHeight);
@@ -1689,14 +1747,13 @@
             const topPosition = ((dynamicMaxHeight - currentHeight) / dynamicMaxHeight) * usableHeight;
             fallingObject.style.top = topPosition + 'px';
             
-            // Update damage cards
-            const damageLevel = getDamageLevel(energy);
+            // Update severity rows
             ['slight', 'minor', 'major', 'fatality'].forEach(level => {
-                const card = document.getElementById(level);
+                const row = document.getElementById('severity-' + level);
                 if (level === damageLevel) {
-                    card.classList.add('active');
+                    row.classList.add('active');
                 } else {
-                    card.classList.remove('active');
+                    row.classList.remove('active');
                 }
             });
             
@@ -1710,15 +1767,40 @@
             updateDisplay();
         });
 
+        // Easter egg
+        let clickCount = 0;
+        document.getElementById('lightningEgg').addEventListener('click', () => {
+            clickCount++;
+            if (clickCount >= 3) {
+                person.classList.add('electrocuted');
+                person.textContent = '⚡😵⚡';
+                setTimeout(() => {
+                    person.classList.remove('electrocuted');
+                    person.textContent = '🧍';
+                    clickCount = 0;
+                }, 1000);
+            }
+        });
+
         // Simulate fall
         function simulateFall() {
-            // Reset object
+            // Scroll to visualization on mobile
+            if (isMobile) {
+                const visualizationContainer = document.querySelector('.visualization-container');
+                if (visualizationContainer) {
+                    visualizationContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+            
             fallingObject.style.animation = 'none';
             impactEffect.classList.remove('show');
             speechBubble.classList.remove('show');
             person.textContent = '🧍';
             
-            // Force reflow to restart animation
+            // Hide indicator initially
+            const indicator = document.getElementById('integratedIndicator');
+            indicator.classList.remove('show');
+            
             void fallingObject.offsetWidth;
             
             setTimeout(() => {
@@ -1729,26 +1811,56 @@
                 const usableHeight = visualizationHeight - groundHeight;
                 const startPosition = ((dynamicMaxHeight - currentHeight) / dynamicMaxHeight) * usableHeight;
                 
-                // Calculate fall time (t = √(2h/g))
                 const fallTime = Math.sqrt(2 * currentHeight / g);
                 
-                // Set start position and animate
                 fallingObject.style.setProperty('--start-height', startPosition + 'px');
                 fallingObject.style.animation = `fall ${fallTime}s linear`;
                 
-                // Impact after fall time
                 setTimeout(() => {
                     impactEffect.classList.add('show');
                     
-                    const damageLevel = getDamageLevel(calculateEnergy(currentWeight, currentHeight));
+                    const energy = calculateEnergy(currentWeight, currentHeight);
+                    const damageLevel = getDamageLevel(energy);
                     
-                    // Get random speech bubble message for this damage level
+                    // Update and show integrated indicator
+                    const indicatorIcon = document.getElementById('indicatorIcon');
+                    const indicatorText = document.getElementById('indicatorText');
+                    const indicatorEnergy = document.getElementById('indicatorEnergy');
+                    
+                    // Remove all classes
+                    indicator.className = 'integrated-indicator show';
+                    
+                    // Add appropriate class and update content
+                    indicator.classList.add(damageLevel);
+                    
+                    switch(damageLevel) {
+                        case 'slight':
+                            indicatorIcon.textContent = '🤕';
+                            indicatorText.textContent = 'Slight';
+                            break;
+                        case 'minor':
+                            indicatorIcon.textContent = '😵';
+                            indicatorText.textContent = 'Minor';
+                            break;
+                        case 'major':
+                            indicatorIcon.textContent = '🚑';
+                            indicatorText.textContent = 'Major';
+                            break;
+                        case 'fatality':
+                            indicatorIcon.textContent = '💀';
+                            indicatorText.textContent = 'Fatality';
+                            break;
+                    }
+                    indicatorEnergy.textContent = energy.toFixed(1) + ' J';
+                    
+                    // Update stats
+                    updateStats(damageLevel);
+                    
                     const messages = SPEECH_BUBBLES[damageLevel];
                     const randomMessage = messages[Math.floor(Math.random() * messages.length)];
                     speechBubble.textContent = randomMessage;
                     speechBubble.classList.add('show');
                     
-                    // Change person state based on damage
                     switch(damageLevel) {
                         case 'slight':
                             person.textContent = '🤕';
@@ -1772,6 +1884,36 @@
             }, 100);
         }
 
+        // Mobile section switching
+        function showSection(section) {
+            // Update nav buttons
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Scroll to appropriate section
+            let targetElement;
+            switch(section) {
+                case 'controls':
+                    targetElement = document.querySelector('.left-column');
+                    break;
+                case 'visualization':
+                    targetElement = document.querySelector('.visualization-container');
+                    break;
+                case 'severity':
+                    targetElement = document.querySelector('.severity-table');
+                    break;
+                case 'equivalence':
+                    targetElement = document.querySelector('.equivalence-table');
+                    break;
+            }
+            
+            if (targetElement) {
+                targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
         // Recalculate on window resize
         window.addEventListener('resize', () => {
             isMobile = window.innerWidth <= 768;
@@ -1780,10 +1922,17 @@
         });
 
         // Initialization
+        loadStats();
         createPresets();
-        createTimeline();
+        createEquivalenceRows();
         updateHeightScale();
         updateDisplay();
+        
+        // Ensure initial scroll after layout is complete
+        setTimeout(() => {
+            const energy = calculateEnergy(currentWeight, currentHeight);
+            updateEquivalenceRows(energy);
+        }, 100);
     </script>
 </body>
 </html>
