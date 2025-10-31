@@ -455,17 +455,17 @@ align-items:flex-end;
       <h2>📋 Educational Disclaimer</h2>
       <p>
         This <strong>Falling Object Impact Simulator</strong> is provided for <strong>educational and informational purposes only</strong>. 
-        It is designed to help people understand the potential risks and consequences of falling objects in workplace environments.
+        It is designed to help professionals understand the potential risks and consequences of falling objects in workplace environments.
       </p>
       <div class="disclaimer-highlight">
         ⚠️ This tool is based on the <a href="https://www.dropsonline.com/" target="_blank">DROPS Calculator</a> methodology and should not replace professional risk assessments or safety protocols.
       </div>
       <p>
         While we strive for accuracy, the results are approximations and may not reflect all real-world factors. 
-        Always consult with HSE professionals and follow your organization's safety guidelines.
+        Always consult with safety professionals and follow your organization's safety guidelines.
       </p>
       <div class="disclaimer-buttons">
-        <button class="disclaimer-btn" onclick="acceptDisclaimer()">✓ BE SAFE AND I AGREE</button>
+        <button class="disclaimer-btn" onclick="acceptDisclaimer()">✓ I Agree</button>
       </div>
     </div>
   </div>
@@ -612,22 +612,15 @@ align-items:flex-end;
   <script>
     // Disclaimer Management
     function acceptDisclaimer(){
-      localStorage.setItem('disclaimerAccepted', 'true');
       const overlay = document.getElementById('disclaimerOverlay');
       overlay.style.animation = 'disclaimerSlideIn .4s ease-out reverse';
       setTimeout(()=>{overlay.style.display = 'none';}, 400);
     }
 
-    // Check if disclaimer was previously accepted
-    function checkDisclaimer(){
-      const accepted = localStorage.getItem('disclaimerAccepted');
-      if(accepted === 'true'){
-        document.getElementById('disclaimerOverlay').style.display = 'none';
-      }
-    }
-
-    // Show disclaimer on page load
-    window.addEventListener('load', checkDisclaimer);
+    // Disclaimer always shown on page load (no localStorage)
+    window.addEventListener('load', ()=>{
+      document.getElementById('disclaimerOverlay').style.display = 'flex';
+    });
   </script>
   <script>
     // Physics & thresholds
