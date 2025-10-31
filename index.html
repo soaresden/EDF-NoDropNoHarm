@@ -59,6 +59,11 @@
     .controls{display:flex;flex-direction:column;gap:15px}
     .control-group{background:#f8f9fa;padding:15px;border-radius:15px;border:2px solid #e9ecef}
     .control-group label{display:block;font-weight:600;margin-bottom:10px;color:#495057;font-size:.95em}
+    .collapsible-header{display:flex;align-items:center;justify-content:space-between;cursor:pointer;font-weight:600;color:#495057;font-size:.95em}
+    .collapsible-arrow{transition:.3s;display:inline-block}
+    .collapsible-header.collapsed .collapsible-arrow{transform:rotate(-90deg)}
+    .collapsible-content{max-height:500px;overflow:hidden;transition:max-height .3s ease}
+    .collapsible-content.collapsed{max-height:0;overflow:hidden}
     .slider-container{display:flex;align-items:center;gap:10px}
     input[type=range]{flex:1;height:8px;border-radius:5px;background:#dee2e6;outline:none;-webkit-appearance:none}
     input[type=range]::-webkit-slider-thumb{
@@ -71,13 +76,22 @@
     /* Custom Weight styling */
     .custom-weight-group{background:#f8f9fa;padding:15px;border-radius:15px;border:2px solid #e9ecef}
     .custom-weight-label{display:block;font-weight:600;margin-bottom:10px;color:#495057;font-size:.95em}
-    .custom-weight-controls{display:flex;align-items:center;gap:8px}
-    .weight-btn{background:#fff;border:2px solid #00A8E9;color:#00A8E9;width:40px;height:40px;border-radius:8px;font-size:1.2em;font-weight:bold;cursor:pointer;transition:.2s;display:flex;align-items:center;justify-content:center}
-    .weight-btn:hover{background:#00A8E9;color:#fff;transform:scale(1.1)}
-    .weight-btn:active{transform:scale(0.95)}
+    .custom-weight-slider-container{display:flex;align-items:center;gap:10px}
     .custom-weight-input{flex:1;display:flex;align-items:center;gap:8px}
-    #customWeightInput{flex:1;padding:10px;border:2px solid #e9ecef;border-radius:8px;font-size:1em;font-weight:600;text-align:center;background:#fff;color:#00A8E9}
-    #customWeightInput:focus{outline:none;border-color:#00A8E9;box-shadow:0 0 0 3px rgba(0,168,233,.1)}
+    #customWeightInput{flex:1;height:8px;border-radius:5px;background:#dee2e6;outline:none;-webkit-appearance:none}
+    #customWeightInput::-webkit-slider-thumb{
+      -webkit-appearance:none;appearance:none;width:20px;height:20px;border-radius:50%;
+      background:#00A8E9;cursor:pointer;border:3px solid #fff;box-shadow:0 2px 5px rgba(0,0,0,.2)
+    }
+    #customWeightInput::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:#00A8E9;cursor:pointer;border:3px solid #fff;box-shadow:0 2px 5px rgba(0,0,0,.2)}
+    #customWeightTextInput{
+      width:70px;padding:8px 10px;border:2px solid #dee2e6;border-radius:6px;
+      font-size:.95em;font-weight:bold;color:#00A8E9;text-align:center;
+      transition:border-color .3s;
+    }
+    #customWeightTextInput:focus{
+      outline:none;border-color:#00A8E9;box-shadow:0 0 8px rgba(0,168,233,.3);
+    }
     .custom-weight-unit{font-weight:600;color:#6c757d;font-size:.95em}
 
     .preset-buttons{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
@@ -152,42 +166,36 @@
     position:absolute;
     right:10px;
     bottom:6px;
-    display:flex;
-    flex-direction:row; /* ✅ horizontal */
+    display:none!important;
+    flex-direction:row;
     gap:6px;
     z-index:4;
     pointer-events:none;
-align-items:flex-end; /* pour qu'ils reposent bien sur le sol */
+align-items:flex-end;
 }
     .grave{font-size:1.6em;opacity:0;transform:translateY(10px) scale(.9)}
     @keyframes gravePop{to{opacity:1;transform:translateY(0) scale(1)}}
-
-    /* Death Counts label */
-    #deathCountsLabel{
-      position:absolute;
-      right:10px;
-      bottom:calc(var(--ground-h) - 35px);
-      font-weight:900;
-      font-size:1.1em;
-      color:#888;
-      letter-spacing:2px;
-      z-index:5;
-      opacity:0;
-      transition:opacity .3s;
-      filter:drop-shadow(0 0 15px rgba(0,0,0,0.5)) drop-shadow(0 0 8px rgba(0,0,0,0.4));
-      text-shadow:
-        0 0 20px rgba(0,0,0,0.6),
-        0 0 40px rgba(0,0,0,0.4),
-        0 0 60px rgba(0,0,0,0.3),
-        2px 2px 4px rgba(0,0,0,0.8);
-    }
-    #deathCountsLabel.show{opacity:1}
 
 
     .person{font-size:3em;z-index:6;position:absolute;bottom:calc(var(--ground-h) - 20px);left:50%;transform:translateX(-50%);filter:drop-shadow(2px 2px 4px rgba(0,0,0,.3))}
     .impact-effect{position:absolute;bottom:calc(var(--ground-h) + 40px);left:50%;transform:translateX(-50%);font-size:4em;z-index:7;opacity:0;transition:opacity .3s}
     .impact-effect.show{opacity:1;animation:impact .5s ease-out}
     @keyframes impact{0%{transform:translateX(-50%) scale(.5)}50%{transform:translateX(-50%) scale(1.3)}100%{transform:translateX(-50%) scale(1)}}
+
+    /* Halo light effect - Full screen */
+    .impact-halo{
+      position:fixed;inset:0;z-index:15;opacity:0;pointer-events:none;
+    }
+    .impact-halo.show{animation:haloShowFullScreen 1.2s ease-out}
+    @keyframes haloShowFullScreen{
+      0%{opacity:0;}
+      20%{opacity:0.8;}
+      100%{opacity:0;}
+    }
+    .impact-halo.halo-slight{background:radial-gradient(circle at center, rgba(76,175,80,0.6) 0%, rgba(76,175,80,0.3) 30%, rgba(76,175,80,0) 100%);}
+    .impact-halo.halo-minor{background:radial-gradient(circle at center, rgba(255,193,7,0.6) 0%, rgba(255,193,7,0.3) 30%, rgba(255,193,7,0) 100%);}
+    .impact-halo.halo-major{background:radial-gradient(circle at center, rgba(253,126,20,0.6) 0%, rgba(253,126,20,0.3) 30%, rgba(253,126,20,0) 100%);}
+    .impact-halo.halo-fatality{background:radial-gradient(circle at center, rgba(220,53,69,0.6) 0%, rgba(220,53,69,0.3) 30%, rgba(220,53,69,0) 100%);}
 
     .speech-bubble{
       position:absolute;bottom:calc(var(--ground-h) + 100px);left:50%;transform:translateX(-50%);
@@ -207,33 +215,20 @@ align-items:flex-end; /* pour qu'ils reposent bien sur le sol */
     }
     .simulate-btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,168,233,.4)}
 
-    /* Indicator (top center) */
-    .integrated-indicator{
-      position:absolute;top:15px;left:50%;transform:translateX(-50%);background:#fff;padding:12px 20px;border-radius:12px;border:3px solid #28a745;box-shadow:0 4px 15px rgba(0,0,0,.15);z-index:10;display:none;align-items:center;gap:10px;transition:.3s
-    }
-    .integrated-indicator.show{display:flex}
-    .integrated-indicator.slight{border-color:#28a745;background:linear-gradient(135deg,#28a745 0%,#20c997 100%);color:#fff}
-    .integrated-indicator.minor{border-color:#ffc107;background:linear-gradient(135deg,#ffc107 0%,#ff9800 100%);color:#fff}
-    .integrated-indicator.major{border-color:#fd7e14;background:linear-gradient(135deg,#fd7e14 0%,#dc3545 100%);color:#fff}
-    .integrated-indicator.fatality{border-color:#dc3545;background:linear-gradient(135deg,#dc3545 0%,#c82333 100%);color:#fff}
-    .indicator-icon{font-size:1.8em}
-    .indicator-text{font-weight:bold;font-size:1.1em}
-    .indicator-energy{font-size:.9em;opacity:.95;margin-left:5px;padding-left:10px;border-left:2px solid rgba(255,255,255,.5)}
-
     /* Random events (right->left) */
     .event{position:absolute;pointer-events:none;z-index:5;filter:drop-shadow(1px 1px 2px rgba(0,0,0,.2))}
     .event .emoji{font-size:2em;display:inline-block}
 
     /* Birds fly RIGHT->LEFT */
-    .bird{left:110%;top:10%;font-size:1.4em}
+    .bird{display:none!important}
     @keyframes flyLeft{from{left:110%;transform:translateY(0)}to{left:-10%;transform:translateY(-10px)}}
 
     /* Boat sails on sea surface RIGHT->LEFT */
-    .boat{left:110%;z-index:5}
+    .boat{display:none!important}
     @keyframes sailLeft{from{left:110%}to{left:-20%}}
 
     /* Mole (neutral) */
-    .mole{left:10%;bottom:calc(var(--ground-h) - 4px);z-index:6}
+    .mole{display:none!important}
     .mole .emoji{font-size:1.8em;transform:translateY(100%)}
     @keyframes pop{0%,100%{transform:translateY(100%)}20%,80%{transform:translateY(0%)}}
 
@@ -251,9 +246,24 @@ align-items:flex-end; /* pour qu'ils reposent bien sur le sol */
     }
     @keyframes driveLeft{from{left:110%}to{left:-20%}}
     @keyframes bandageFloat{
-      0%{opacity:0;transform:translateX(-50%) scale(0)}
-      50%{opacity:1;transform:translateX(-50%) scale(1.2)}
-      100%{opacity:0;transform:translateX(-50%) translateY(-30px) scale(1)}
+      0%{opacity:0;transform:translateX(-50%) scale(0);box-shadow:0 0 0 0 rgba(76,175,80,0.7)}
+      50%{opacity:1;transform:translateX(-50%) scale(1.2);box-shadow:0 0 15px 8px rgba(76,175,80,0)}
+      100%{opacity:0;transform:translateX(-50%) translateY(-30px) scale(1);box-shadow:0 0 0 0 rgba(76,175,80,0)}
+    }
+    @keyframes bandageFloatYellow{
+      0%{opacity:0;transform:translateX(-50%) scale(0);box-shadow:0 0 0 0 rgba(255,193,7,0.7)}
+      50%{opacity:1;transform:translateX(-50%) scale(1.2);box-shadow:0 0 15px 8px rgba(255,193,7,0)}
+      100%{opacity:0;transform:translateX(-50%) translateY(-30px) scale(1);box-shadow:0 0 0 0 rgba(255,193,7,0)}
+    }
+    @keyframes bandageLeft{
+      0%{opacity:0;transform:translateX(-80%) scale(0);box-shadow:0 0 0 0 rgba(255,193,7,0.7)}
+      50%{opacity:1;transform:translateX(-80%) scale(1.2);box-shadow:0 0 15px 8px rgba(255,193,7,0)}
+      100%{opacity:0;transform:translateX(-80%) translateY(-30px) scale(1);box-shadow:0 0 0 0 rgba(255,193,7,0)}
+    }
+    @keyframes bandageRight{
+      0%{opacity:0;transform:translateX(-20%) scale(0);box-shadow:0 0 0 0 rgba(255,193,7,0.7)}
+      50%{opacity:1;transform:translateX(-20%) scale(1.2);box-shadow:0 0 15px 8px rgba(255,193,7,0)}
+      100%{opacity:0;transform:translateX(-20%) translateY(-30px) scale(1);box-shadow:0 0 0 0 rgba(255,193,7,0)}
     }
     @keyframes reaperAppear{
       0%{opacity:0;transform:translateX(-50%) scale(0) rotateZ(-45deg)}
@@ -264,16 +274,16 @@ align-items:flex-end; /* pour qu'ils reposent bien sur le sol */
     /* FATALITY overlay */
     #fatalOverlay{
       position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-      font-weight:900;font-size:64px;color:#ff2d2d;text-shadow:0 4px 16px rgba(0,0,0,.6);
-      letter-spacing:4px;opacity:0;transform:scale(.9);z-index:20;pointer-events:none
+      font-weight:900;font-size:140px;color:#ff3333;text-shadow:0 4px 16px rgba(0,0,0,.8), 0 0 30px rgba(255,0,0,.4);
+      letter-spacing:4px;opacity:0;transform:scale(.5);z-index:20;pointer-events:none;filter:drop-shadow(0 0 20px rgba(255,0,0,0.6))
     }
     @keyframes fatalShow{
-      0%{opacity:0;transform:scale(.9)}
-      30%{opacity:1;transform:scale(1.02)}
+      0%{opacity:0;transform:scale(.3)}
+      30%{opacity:1;transform:scale(1.05)}
       60%{opacity:1;transform:scale(1)}
       100%{opacity:0;transform:scale(1)}
     }
-    #visualization.drama{filter:grayscale(.8) blur(1px) brightness(.9)}
+    #visualization.drama{filter:grayscale(.8) blur(1px) brightness(.7)}
 
     /* Tables */
     .bottom-tables{display:grid;grid-template-columns:1fr 1fr;gap:20px}
@@ -285,6 +295,13 @@ align-items:flex-end; /* pour qu'ils reposent bien sur le sol */
     .severity-row{display:flex;align-items:center;gap:12px;padding:12px;margin-bottom:8px;border-radius:10px;border:3px solid transparent;background:#fff;transition:.3s;cursor:pointer}
     .severity-row:last-child{margin-bottom:0}
     .severity-row.active{transform:translateX(5px);box-shadow:0 4px 15px rgba(0,0,0,.15)}
+    .severity-row.current{background:#fff;color:#495057;border-color:#fd7e14;display:flex;flex-direction:column;align-items:flex-start;gap:12px;padding:16px;border-radius:12px;border:2px solid #fd7e14;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,.1)}
+    .severity-row.current .severity-title-label{font-size:.9em;font-weight:bold;color:#6c757d;text-transform:uppercase;letter-spacing:.5px;width:100%}
+    .severity-row.current-content{display:flex;align-items:center;gap:15px;width:100%;flex:1}
+    .severity-row.current .severity-icon{font-size:2.2em}
+    .severity-row.current .severity-info{flex:1}
+    .severity-row.current .severity-threshold{font-size:.9em;color:#6c757d;margin-top:4px}
+    .severity-row.current .severity-title{font-weight:bold}
     .severity-row.slight{border-color:#28a745}
     .severity-row.slight.active{background:linear-gradient(135deg,#28a745 0%,#20c997 100%);color:#fff}
     .severity-row.minor{border-color:#ffc107}
@@ -294,12 +311,19 @@ align-items:flex-end; /* pour qu'ils reposent bien sur le sol */
     .severity-row.fatality{border-color:#dc3545}
     .severity-row.fatality.active{background:linear-gradient(135deg,#dc3545 0%,#c82333 100%);color:#fff}
     .severity-icon{font-size:2em}
+    .severity-info{flex:1}
+    .severity-title{font-weight:600;color:#495057}
+    .severity-threshold{font-size:.85em;color:#6c757d}
+    .severity-row.active .severity-title, .severity-row.active .severity-threshold{color:#fff}
+    .severity-row.current .severity-threshold{opacity:.9}
     .equivalence-table{background:#f8f9fa;padding:15px;border-radius:15px;border:2px solid #e9ecef;display:flex;flex-direction:column}
     .equivalence-table h3{
       color:#fff;background:linear-gradient(135deg,#00A8E9 0%,#000E47 100%);
       font-size:1.1em;font-weight:bold;margin:-15px -15px 15px;padding:12px 15px;text-align:center;border-radius:15px 15px 0 0;box-shadow:0 2px 8px rgba(0,0,0,.1);text-transform:uppercase;letter-spacing:.5px
     }
-    .equivalence-display-large{display:flex;align-items:center;gap:15px;padding:16px;background:#fff;border-radius:12px;border:2px solid #00A8E9;margin-bottom:12px}
+    .equivalence-display-large{display:flex;flex-direction:column;align-items:flex-start;gap:12px;padding:16px;background:#fff;border-radius:12px;border:2px solid #00A8E9;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,.1)}
+    .equivalence-display-large .equivalence-title-large{font-size:.9em;font-weight:bold;color:#6c757d;text-transform:uppercase;letter-spacing:.5px;width:100%}
+    .equivalence-display-large-content{display:flex;align-items:center;gap:15px;width:100%}
     .equivalence-icon-large{font-size:2.2em}
     .equivalence-text-large{flex:1;font-size:1em;line-height:1.4;color:#495057}
     .energy-display{font-size:1em;font-weight:bold;color:#00A8E9}
@@ -343,14 +367,21 @@ align-items:flex-end; /* pour qu'ils reposent bien sur le sol */
       .preset-buttons{grid-template-columns:repeat(2,1fr);gap:8px}
       .falling-object{font-size:2em}
       .person{font-size:2.5em}
-      .integrated-indicator{padding:8px 15px;font-size:.9em}
-      .indicator-icon{font-size:1.5em}
-      .indicator-text{font-size:1em}
-      .indicator-energy{font-size:.85em}
       .bottom-tables{grid-template-columns:1fr;gap:15px}
       .left-column{position:relative;z-index:15}
       .controls{position:relative;z-index:15}
       input[type=range]{position:relative;z-index:16}
+      
+      /* Afficher que les emojis des références en mobile */
+      .reference-label{display:none!important}
+      
+      /* Masquer les tombes en mobile */
+      #graveyardGround{display:none!important}
+      
+      /* Masquer les oiseaux et autres événements */
+      .bird{display:none!important}
+      .boat{display:none!important}
+      .mole{display:none!important}
     }
     @media (max-width:480px){
       .header h1{font-size:1.2em}
@@ -420,13 +451,10 @@ align-items:flex-end; /* pour qu'ils reposent bien sur le sol */
 
             <div class="custom-weight-group">
               <label class="custom-weight-label">⭐ Custom Weight</label>
-              <div class="custom-weight-controls">
-                <button class="weight-btn" onclick="decreaseWeight()">−</button>
-                <div class="custom-weight-input">
-                  <input type="number" id="customWeightInput" min="0.01" max="100" step="0.01" placeholder="1.0" value="1.0">
-                  <span class="custom-weight-unit">kg</span>
-                </div>
-                <button class="weight-btn" onclick="increaseWeight()">+</button>
+              <div class="custom-weight-slider-container">
+                <input type="range" id="customWeightInput" min="0.01" max="100" step="0.01" value="1.0">
+                <input type="number" id="customWeightTextInput" min="0.01" max="100" step="0.01" value="1.0" placeholder="1.0">
+                <span class="custom-weight-unit">kg</span>
               </div>
             </div>
 
@@ -436,37 +464,14 @@ align-items:flex-end; /* pour qu'ils reposent bien sur le sol */
 
         <!-- Right: Visualization -->
         <div class="visualization-container">
-          <!-- Mobile stats -->
-          <div class="stats-display-mobile">
-            <div class="stat-row total"><span class="stat-label">🎯 Total:</span><span class="stat-value" id="totalSimulationsMobile">0</span></div>
-            <div class="stat-row safe"><span class="stat-label">✅ Safe:</span><span class="stat-value" id="safeSimulationsMobile">0</span></div>
-            <div class="stat-row lives"><span class="stat-label">💀 Deaths:</span><span class="stat-value" id="preventedDeathsMobile">0</span></div>
-            <div class="stat-row injuries"><span class="stat-label">🏥 Injuries:</span><span class="stat-value" id="preventedInjuriesMobile">0</span></div>
-          </div>
-
           <div id="visualization">
             <!-- FATALITY overlay -->
-            <div id="fatalOverlay">You Killed Him 😱 !</div>
+            <div id="fatalOverlay">☠️</div>
 
             <!-- Sea layer -->
             <div class="sea" aria-hidden="true"></div>
 
             <div class="height-scale" id="heightScale"></div>
-
-            <!-- Stats bubble -->
-            <div class="stats-display">
-              <div class="stat-row total"><span class="stat-label">🎯 Total Simulations:</span><span class="stat-value" id="totalSimulations">0</span></div>
-              <div class="stat-row safe"><span class="stat-label">✅ Safe Simulations:</span><span class="stat-value" id="safeSimulations">0</span></div>
-              <div class="stat-row lives"><span class="stat-label">💀 Deaths:</span><span class="stat-value" id="preventedDeaths">0</span></div>
-              <div class="stat-row injuries"><span class="stat-label">🏥 Injuries:</span><span class="stat-value" id="preventedInjuries">0</span></div>
-            </div>
-
-            <!-- Integrated indicator -->
-            <div class="integrated-indicator" id="integratedIndicator">
-              <div class="indicator-icon" id="indicatorIcon">🤕</div>
-              <div class="indicator-text" id="indicatorText">Slight</div>
-              <div class="indicator-energy" id="indicatorEnergy">0 J</div>
-            </div>
 
             <div class="falling-object" id="fallingObject">📦</div>
 
@@ -479,14 +484,12 @@ align-items:flex-end; /* pour qu'ils reposent bien sur le sol */
 
             <!-- Ground -->
             <div class="ground">
-              <!-- Death Counts Label -->
-              <div id="deathCountsLabel">DEATH COUNTS</div>
-
               <!-- Graveyard in soil -->
               <div id="graveyardGround" aria-live="polite"></div>
 
               <div class="person" id="person">🧍</div>
               <div class="impact-effect" id="impactEffect">💥</div>
+              <div class="impact-halo" id="impactHalo"></div>
               <div class="speech-bubble" id="speechBubble">Ouch!</div>
             </div>
           </div>
@@ -497,23 +500,35 @@ align-items:flex-end; /* pour qu'ils reposent bien sur le sol */
       <div class="bottom-tables">
         <div class="severity-table">
           <h3>⚠️ Severity Levels</h3>
+          <div class="severity-row current" id="severity-current">
+            <div class="severity-title-label">Current SECurity Level</div>
+            <div class="severity-row current-content">
+              <div class="severity-icon" id="currentIcon">📊</div>
+              <div class="severity-info">
+                <div class="severity-title" id="currentTitle">Waiting for simulation...</div>
+                <div class="severity-threshold" id="currentSeverityText"></div>
+              </div>
+            </div>
+          </div>
           <div class="severity-row slight" id="severity-slight">
-            <div class="severity-icon">🤕</div><div class="severity-info"><div class="severity-title">Slight</div><div class="severity-threshold">&lt; 15 J</div></div>
+            <div class="severity-icon">🤕</div><div class="severity-info"><div class="severity-title">Slight</div><div class="severity-threshold">[0 - 50 J]</div></div>
           </div>
           <div class="severity-row minor" id="severity-minor">
-            <div class="severity-icon">😵</div><div class="severity-info"><div class="severity-title">Minor</div><div class="severity-threshold">15–50 J</div></div>
+            <div class="severity-icon">😵</div><div class="severity-info"><div class="severity-title">Minor</div><div class="severity-threshold">[50 - 85 J]</div></div>
           </div>
           <div class="severity-row major" id="severity-major">
-            <div class="severity-icon">🚑</div><div class="severity-info"><div class="severity-title">Major</div><div class="severity-threshold">50–100 J</div></div>
+            <div class="severity-icon">🚑</div><div class="severity-info"><div class="severity-title">Major</div><div class="severity-threshold">[85 - 130 J]</div></div>
           </div>
           <div class="severity-row fatality" id="severity-fatality">
-            <div class="severity-icon">💀</div><div class="severity-info"><div class="severity-title">Fatality</div><div class="severity-threshold">&gt; 100 J</div></div>
+            <div class="severity-icon">💀</div><div class="severity-info"><div class="severity-title">Fatality</div><div class="severity-threshold">[130+ J]</div></div>
           </div>
         </div>
 
         <div class="equivalence-table">
           <h3>📊 Energy Equivalence</h3>
-          <div id="equivalenceFeatured" class="equivalence-display-large" aria-live="polite"></div>
+          <div id="equivalenceFeatured" class="equivalence-display-large" aria-live="polite">
+            <div class="equivalence-title-large">Current Energy Equivalence</div>
+          </div>
           <div id="equivalenceRows"></div>
         </div>
       </div>
@@ -523,7 +538,7 @@ align-items:flex-end; /* pour qu'ils reposent bien sur le sol */
   <script>
     // Physics & thresholds
     const g = 9.81;
-    const THRESHOLDS = { slight: 15, minor: 50, major: 100 };
+    const THRESHOLDS = { slight: 50, minor: 85, major: 130 };
 
     const PRESETS = [
       { icon: '🔩', label: 'Bolt', weight: 0.05, desc: '50g' },
@@ -577,6 +592,7 @@ align-items:flex-end; /* pour qu'ils reposent bien sur le sol */
     const fallingObject = document.getElementById('fallingObject');
     const person = document.getElementById('person');
     const impactEffect = document.getElementById('impactEffect');
+    const impactHalo = document.getElementById('impactHalo');
     const speechBubble = document.getElementById('speechBubble');
     const heightScale = document.getElementById('heightScale');
     const visualization = document.getElementById('visualization');
@@ -594,15 +610,15 @@ align-items:flex-end; /* pour qu'ils reposent bien sur le sol */
     function saveStats(){ localStorage.setItem('safetyStats', JSON.stringify(safetyStats)); }
 
     function updateStatsDisplay(){
-      document.getElementById('totalSimulations').textContent = safetyStats.totalSimulations;
-      document.getElementById('preventedInjuries').textContent = safetyStats.preventedInjuries;
-      document.getElementById('safeSimulations').textContent = safetyStats.safeSimulations;
-      document.getElementById('preventedDeaths').textContent = safetyStats.preventedDeaths;
-
-      document.getElementById('totalSimulationsMobile').textContent = safetyStats.totalSimulations;
-      document.getElementById('preventedInjuriesMobile').textContent = safetyStats.preventedInjuries;
-      document.getElementById('safeSimulationsMobile').textContent = safetyStats.safeSimulations;
-      document.getElementById('preventedDeathsMobile').textContent = safetyStats.preventedDeaths;
+      const totalEl = document.getElementById('totalSimulations');
+      const safeEl = document.getElementById('safeSimulations');
+      const deathsEl = document.getElementById('preventedDeaths');
+      const injuriesEl = document.getElementById('preventedInjuries');
+      
+      if(totalEl) totalEl.textContent = safetyStats.totalSimulations;
+      if(safeEl) safeEl.textContent = safetyStats.safeSimulations;
+      if(deathsEl) deathsEl.textContent = safetyStats.preventedDeaths;
+      if(injuriesEl) injuriesEl.textContent = safetyStats.preventedInjuries;
     }
 
     // Presets
@@ -625,7 +641,8 @@ align-items:flex-end; /* pour qu'ils reposent bien sur le sol */
         btn.onclick = ()=>{
           currentWeight = p.weight;
           fallingObject.textContent = p.icon;
-          customWeightInput.value = '';
+          customWeightInput.value = p.weight;
+          document.getElementById('customWeightTextInput').value = p.weight.toFixed(2);
           updateDisplay();
         };
         container.appendChild(btn);
@@ -658,8 +675,11 @@ align-items:flex-end; /* pour qu'ils reposent bien sur le sol */
       const featured = document.getElementById('equivalenceFeatured');
       const eq = getEquivalence(energy);
       featured.innerHTML = `
-        <div class="equivalence-icon-large">${eq.icon}</div>
-        <div class="equivalence-text-large"><strong>${eq.text}</strong><br><span class="energy-display">${energy.toFixed(1)} J</span></div>
+        <div class="equivalence-title-large">Current Energy Equivalence</div>
+        <div class="equivalence-display-large-content">
+          <div class="equivalence-icon-large">${eq.icon}</div>
+          <div class="equivalence-text-large"><strong>${eq.text}</strong><br><span class="energy-display">${energy.toFixed(1)} J</span></div>
+        </div>
       `;
     }
     function updateEquivalenceRows(energy){
@@ -750,6 +770,7 @@ align-items:flex-end; /* pour qu'ils reposent bien sur le sol */
       const energy = calculateEnergy(currentWeight,currentHeight);
       const damageLevel = getDamageLevel(energy);
       updateEquivalenceRows(energy);
+      updateCurrentSeverity(damageLevel, energy);
 
       const dynMax = getDynamicMaxHeight(currentHeight);
       const vizH = visualization.offsetHeight;
@@ -766,29 +787,38 @@ align-items:flex-end; /* pour qu'ils reposent bien sur le sol */
       updateHeightScale();
     }
 
+    function updateCurrentSeverity(level, energy){
+      const textEl = document.getElementById('currentSeverityText');
+      const titleEl = document.getElementById('currentTitle');
+      const iconEl = document.getElementById('currentIcon');
+      const severityNames = { slight: 'Slight', minor: 'Minor', major: 'Major', fatality: 'Fatality' };
+      const severityIcons = { slight: '🤕', minor: '😵', major: '🚑', fatality: '💀' };
+      
+      titleEl.textContent = severityNames[level];
+      textEl.textContent = `${energy.toFixed(2)} J`;
+      iconEl.textContent = severityIcons[level];
+    }
+
     // Inputs
     heightInput.addEventListener('input',()=>{currentHeight=parseFloat(heightInput.value);updateDisplay();});
     customWeightInput.addEventListener('input',()=>{
       const v=parseFloat(customWeightInput.value);
-      if(v && v>0){currentWeight=v;fallingObject.textContent='⚫';updateDisplay();}
+      if(v && v>0){
+        currentWeight=v;
+        document.getElementById('customWeightTextInput').value = v.toFixed(2);
+        fallingObject.textContent='⚫';
+        updateDisplay();
+      }
     });
-
-    function increaseWeight(){
-      let v = parseFloat(customWeightInput.value) || 1;
-      v = Math.min(100, v + 0.1);
-      customWeightInput.value = v.toFixed(2);
-      currentWeight = v;
-      fallingObject.textContent='⚫';
-      updateDisplay();
-    }
-    function decreaseWeight(){
-      let v = parseFloat(customWeightInput.value) || 1;
-      v = Math.max(0.01, v - 0.1);
-      customWeightInput.value = v.toFixed(2);
-      currentWeight = v;
-      fallingObject.textContent='⚫';
-      updateDisplay();
-    }
+    document.getElementById('customWeightTextInput').addEventListener('input',()=>{
+      const v=parseFloat(document.getElementById('customWeightTextInput').value);
+      if(v && v>0 && v<=100){
+        currentWeight=v;
+        customWeightInput.value = v;
+        fallingObject.textContent='⚫';
+        updateDisplay();
+      }
+    });
 
     // Easter egg
     let clickCount=0;
@@ -831,10 +861,9 @@ align-items:flex-end; /* pour qu'ils reposent bien sur le sol */
     function spawnBoat(){
       const boat=document.createElement('div');
       boat.className='event boat';
-      // set on sea surface: ground height + ~sea height - small offset
       const seaH = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--sea-h'));
       const groundH = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--ground-h'));
-      const surfaceBottom = groundH + (seaH - 28); // tune float height
+      const surfaceBottom = groundH + (seaH - 28);
       boat.style.bottom = `${surfaceBottom}px`;
       boat.style.animation = `sailLeft ${rand(10,14)}s linear forwards`;
       boat.textContent = Math.random()<0.5 ? '⛵' : '🚤';
@@ -863,28 +892,42 @@ align-items:flex-end; /* pour qu'ils reposent bien sur le sol */
       amb.addEventListener('animationend',()=>amb.remove());
       setTimeout(()=>amb.remove(),12000);
     }
-    function spawnBandage(){
-      const bandage=document.createElement('div');
-      bandage.className='event';
-      bandage.style.left = '50%';
-      bandage.style.bottom = 'calc(var(--ground-h) + 40px)';
-      bandage.style.transform = 'translateX(-50%)';
-      bandage.style.fontSize = '2em';
-      bandage.textContent = '🩹';
-      bandage.style.animation = 'bandageFloat 1.5s ease-out forwards';
-      visualization.appendChild(bandage);
-      setTimeout(()=>bandage.remove(),2000);
-    }
-    function spawnFirefighters(){
-      const ff=document.createElement('div');
-      ff.className='event';
-      ff.style.bottom = 'calc(var(--ground-h) - 15px)';
-      ff.style.animation = `driveLeft ${rand(5,7)}s linear forwards`;
-      ff.style.left = '110%';
-      ff.innerHTML = `<span style="font-size:2.2em">🚒</span>`;
-      visualization.appendChild(ff);
-      ff.addEventListener('animationend',()=>ff.remove());
-      setTimeout(()=>ff.remove(),10000);
+    function spawnBandage(count=1){
+      if(count === 1){
+        const bandage=document.createElement('div');
+        bandage.className='event';
+        bandage.style.left = '50%';
+        bandage.style.bottom = 'calc(var(--ground-h) + 40px)';
+        bandage.style.transform = 'translateX(-50%)';
+        bandage.style.fontSize = '2em';
+        bandage.textContent = '🩹';
+        bandage.style.animation = 'bandageFloat 1.5s ease-out forwards';
+        visualization.appendChild(bandage);
+        setTimeout(()=>bandage.remove(),2000);
+      }else if(count === 2){
+        const bandage1=document.createElement('div');
+        bandage1.className='event';
+        bandage1.style.left = '50%';
+        bandage1.style.bottom = 'calc(var(--ground-h) + 40px)';
+        bandage1.style.fontSize = '2em';
+        bandage1.textContent = '🩹';
+        bandage1.style.animation = 'bandageLeft 1.5s ease-out forwards';
+        visualization.appendChild(bandage1);
+        
+        setTimeout(()=>{
+          const bandage2=document.createElement('div');
+          bandage2.className='event';
+          bandage2.style.left = '50%';
+          bandage2.style.bottom = 'calc(var(--ground-h) + 40px)';
+          bandage2.style.fontSize = '2em';
+          bandage2.textContent = '🩹';
+          bandage2.style.animation = 'bandageRight 1.5s ease-out forwards';
+          visualization.appendChild(bandage2);
+          setTimeout(()=>bandage2.remove(),2000);
+        },300);
+        
+        setTimeout(()=>bandage1.remove(),2300);
+      }
     }
     function spawnReaper(){
       const reaper=document.createElement('div');
@@ -921,7 +964,7 @@ align-items:flex-end; /* pour qu'ils reposent bien sur le sol */
     function updateStats(damageLevel){
       safetyStats.totalSimulations++;
       if(damageLevel==='fatality'){
-        safetyStats.preventedDeaths++;  // on réutilise ce compteur comme nb de décès
+        safetyStats.preventedDeaths++;
       }else if(damageLevel==='major' || damageLevel==='minor'){
         safetyStats.preventedInjuries++;
       }else{
@@ -929,14 +972,6 @@ align-items:flex-end; /* pour qu'ils reposent bien sur le sol */
       }
       updateStatsDisplay();
       saveStats();
-      
-      // Mettre à jour le label Death Counts
-      const label = document.getElementById('deathCountsLabel');
-      if(safetyStats.preventedDeaths > 0){
-        label.classList.add('show');
-      }else{
-        label.classList.remove('show');
-      }
     }
 
     // Simulation
@@ -948,10 +983,9 @@ align-items:flex-end; /* pour qu'ils reposent bien sur le sol */
       // reset visuals
       fallingObject.style.animation='none';
       impactEffect.classList.remove('show');
+      impactHalo.classList.remove('show');
       speechBubble.classList.remove('show');
       person.textContent='🧍';
-      const indicator = document.getElementById('integratedIndicator');
-      indicator.classList.remove('show');
 
       void fallingObject.offsetWidth; // reflow
 
@@ -968,22 +1002,15 @@ align-items:flex-end; /* pour qu'ils reposent bien sur le sol */
         fallingObject.style.animation = `fall ${fallTime}s linear`;
 
         setTimeout(()=>{
-          impactEffect.classList.add('show');
-
           const energy = calculateEnergy(currentWeight,currentHeight);
           const damageLevel = getDamageLevel(energy);
-
-          // Integrated indicator content & class
-          const indicatorIcon = document.getElementById('indicatorIcon');
-          const indicatorText = document.getElementById('indicatorText');
-          const indicatorEnergy = document.getElementById('indicatorEnergy');
-
-          indicator.className = 'integrated-indicator show ' + damageLevel;
           const map = { slight:'🤕', minor:'😵', major:'🚑', fatality:'💀' };
-          const labelMap = { slight:'Slight', minor:'Minor', major:'Major', fatality:'Fatality' };
-          indicatorIcon.textContent = map[damageLevel];
-          indicatorText.textContent = labelMap[damageLevel];
-          indicatorEnergy.textContent = energy.toFixed(1) + ' J';
+
+          impactEffect.classList.add('show');
+          
+          // Add halo with appropriate class
+          impactHalo.className = 'impact-halo halo-' + damageLevel;
+          impactHalo.classList.add('show');
 
           // Stats & consequences
           updateStats(damageLevel);
@@ -994,22 +1021,26 @@ align-items:flex-end; /* pour qu'ils reposent bien sur le sol */
           person.textContent = map[damageLevel];
 
           if(damageLevel==='fatality'){
-            addGrave(true);     // ⚰️ dans le sol (droite)
-            spawnAmbulance();   // ambulance
-            spawnReaper();      // faucheuse ⚰️
-            showFatality();     // overlay "You Killed Him 😱 !" + vignette
+            if(!isMobile){
+              addGrave(true);
+              spawnReaper();
+            }
+            showFatality();
           }else if(damageLevel==='major'){
-            spawnFirefighters();  // pompiers 🚒
-          }else if(damageLevel==='minor' || damageLevel==='slight'){
-            spawnBandage();  // pansement 🩹
+            spawnAmbulance();
+          }else if(damageLevel==='minor'){
+            spawnBandage(2);
+          }else if(damageLevel==='slight'){
+            spawnBandage(1);
           }
 
           setTimeout(()=>{
             impactEffect.classList.remove('show');
+            impactHalo.classList.remove('show');
             speechBubble.classList.remove('show');
           },2500);
         }, fallTime*1000);
-      },2000);
+      },1000);
     }
 
     // Mobile nav
@@ -1038,16 +1069,12 @@ align-items:flex-end; /* pour qu'ils reposent bien sur le sol */
     updateHeightScale();
     updateDisplay();
     renderGraveyard();
-    
-    // Initialiser le label Death Counts
-    const label = document.getElementById('deathCountsLabel');
-    if(safetyStats.preventedDeaths > 0){
-      label.classList.add('show');
-    }
 
     // Events clock (every 20s) + one immediately
-    spawnRandomEvent();
-    setInterval(spawnRandomEvent, 20000);
+    if(!isMobile){
+      spawnRandomEvent();
+      setInterval(spawnRandomEvent, 20000);
+    }
 
     // Post-layout sync
     setTimeout(()=>{ const e=calculateEnergy(currentWeight,currentHeight); updateEquivalenceRows(e); },100);
