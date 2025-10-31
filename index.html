@@ -340,7 +340,60 @@ align-items:flex-end;
     .equivalence-energy{font-size:.75em;opacity:.7}
     .equivalence-row.active .equivalence-energy{opacity:.9}
 
-    /* Responsive */
+    /* Disclaimer Modal */
+    .disclaimer-overlay{
+      position:fixed;inset:0;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;
+      z-index:2000;padding:20px;
+    }
+    .disclaimer-modal{
+      background:#fff;border-radius:20px;padding:40px;max-width:600px;width:100%;
+      box-shadow:0 20px 60px rgba(0,0,0,.4);animation:disclaimerSlideIn .4s ease-out;
+    }
+    @keyframes disclaimerSlideIn{
+      from{transform:translateY(-50px);opacity:0}
+      to{transform:translateY(0);opacity:1}
+    }
+    .disclaimer-modal h2{
+      color:#00A8E9;font-size:1.8em;margin-bottom:20px;text-align:center;
+    }
+    .disclaimer-modal p{
+      color:#495057;font-size:1em;line-height:1.6;margin-bottom:16px;
+    }
+    .disclaimer-modal a{
+      color:#00A8E9;text-decoration:none;font-weight:600;transition:.3s;
+    }
+    .disclaimer-modal a:hover{color:#0088c9;text-decoration:underline}
+    .disclaimer-modal .disclaimer-highlight{
+      background:linear-gradient(135deg,#00A8E9 0%,#000E47 100%);
+      color:#fff;padding:20px;border-radius:12px;margin:20px 0;font-weight:600;text-align:center;
+      font-style:italic;
+    }
+    .disclaimer-buttons{
+      display:flex;gap:15px;margin-top:30px;justify-content:center;
+    }
+    .disclaimer-btn{
+      background:linear-gradient(135deg,#00A8E9 0%,#000E47 100%);color:#fff;border:none;
+      padding:12px 30px;border-radius:10px;font-size:1em;font-weight:bold;cursor:pointer;
+      transition:.3s;box-shadow:0 4px 15px rgba(0,168,233,.3);
+    }
+    .disclaimer-btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,168,233,.4)}
+
+    /* Responsive Disclaimer */
+    @media (max-width:768px){
+      .disclaimer-modal{padding:30px 20px}
+      .disclaimer-modal h2{font-size:1.5em}
+      .disclaimer-modal p{font-size:.95em}
+      .disclaimer-highlight{padding:15px;font-size:.95em}
+    }
+    @media (max-width:480px){
+      .disclaimer-overlay{padding:10px}
+      .disclaimer-modal{padding:20px 15px}
+      .disclaimer-modal h2{font-size:1.3em;margin-bottom:15px}
+      .disclaimer-modal p{font-size:.9em;margin-bottom:12px}
+      .disclaimer-highlight{padding:12px;font-size:.85em;margin:15px 0}
+      .disclaimer-buttons{flex-direction:column;gap:10px}
+      .disclaimer-btn{width:100%;padding:12px 20px}
+    }
     @media (max-width:1400px){.container{max-width:100%}.top-section{grid-template-columns:280px 1fr}}
     @media (max-width:1024px){
       .top-section{grid-template-columns:1fr}
@@ -396,6 +449,27 @@ align-items:flex-end;
   </style>
 </head>
 <body>
+  <!-- Disclaimer Modal -->
+  <div class="disclaimer-overlay" id="disclaimerOverlay">
+    <div class="disclaimer-modal">
+      <h2>📋 Educational Disclaimer</h2>
+      <p>
+        This <strong>Falling Object Impact Simulator</strong> is provided for <strong>educational and informational purposes only</strong>. 
+        It is designed to help people understand the potential risks and consequences of falling objects in workplace environments.
+      </p>
+      <div class="disclaimer-highlight">
+        ⚠️ This tool is based on the <a href="https://www.dropsonline.com/" target="_blank">DROPS Calculator</a> methodology and should not replace professional risk assessments or safety protocols.
+      </div>
+      <p>
+        While we strive for accuracy, the results are approximations and may not reflect all real-world factors. 
+        Always consult with HSE professionals and follow your organization's safety guidelines.
+      </p>
+      <div class="disclaimer-buttons">
+        <button class="disclaimer-btn" onclick="acceptDisclaimer()">✓ BE SAFE AND I AGREE</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Mobile Navigation -->
   <div class="mobile-nav">
     <div class="header-logos-mobile">
@@ -418,8 +492,8 @@ align-items:flex-end;
         <img src="./logo_cou.png" alt="Courseulles Logo" class="header-logo">
         <div class="header-content">
           <h1>📦 Falling Object Impact Simulator</h1>
-          <p>Understand the impact of dropped objects <span class="lightning-easter-egg" id="lightningEgg" title="Click for a surprise!">⚡</span></p>
-          <div class="header-description">Help you to assess the potential outcomes of dropped object at your work site</div>
+          <p>Understand the impact of falling objects <span class="lightning-easter-egg" id="lightningEgg" title="Click for a surprise!">⚡</span></p>
+          <div class="header-description">Explore the dangers of falling objects in professional environments</div>
         </div>
         <img src="./logo_drop.png" alt="Drop Logo" class="header-logo">
       </div>
@@ -535,6 +609,26 @@ align-items:flex-end;
     </div>
   </div>
 
+  <script>
+    // Disclaimer Management
+    function acceptDisclaimer(){
+      localStorage.setItem('disclaimerAccepted', 'true');
+      const overlay = document.getElementById('disclaimerOverlay');
+      overlay.style.animation = 'disclaimerSlideIn .4s ease-out reverse';
+      setTimeout(()=>{overlay.style.display = 'none';}, 400);
+    }
+
+    // Check if disclaimer was previously accepted
+    function checkDisclaimer(){
+      const accepted = localStorage.getItem('disclaimerAccepted');
+      if(accepted === 'true'){
+        document.getElementById('disclaimerOverlay').style.display = 'none';
+      }
+    }
+
+    // Show disclaimer on page load
+    window.addEventListener('load', checkDisclaimer);
+  </script>
   <script>
     // Physics & thresholds
     const g = 9.81;
