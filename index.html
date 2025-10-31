@@ -68,6 +68,18 @@
     input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:#00A8E9;cursor:pointer;border:3px solid #fff;box-shadow:0 2px 5px rgba(0,0,0,.2)}
     .height-value{min-width:60px;text-align:right;font-weight:bold;color:#00A8E9}
 
+    /* Custom Weight styling */
+    .custom-weight-group{background:#f8f9fa;padding:15px;border-radius:15px;border:2px solid #e9ecef}
+    .custom-weight-label{display:block;font-weight:600;margin-bottom:10px;color:#495057;font-size:.95em}
+    .custom-weight-controls{display:flex;align-items:center;gap:8px}
+    .weight-btn{background:#fff;border:2px solid #00A8E9;color:#00A8E9;width:40px;height:40px;border-radius:8px;font-size:1.2em;font-weight:bold;cursor:pointer;transition:.2s;display:flex;align-items:center;justify-content:center}
+    .weight-btn:hover{background:#00A8E9;color:#fff;transform:scale(1.1)}
+    .weight-btn:active{transform:scale(0.95)}
+    .custom-weight-input{flex:1;display:flex;align-items:center;gap:8px}
+    #customWeightInput{flex:1;padding:10px;border:2px solid #e9ecef;border-radius:8px;font-size:1em;font-weight:600;text-align:center;background:#fff;color:#00A8E9}
+    #customWeightInput:focus{outline:none;border-color:#00A8E9;box-shadow:0 0 0 3px rgba(0,168,233,.1)}
+    .custom-weight-unit{font-weight:600;color:#6c757d;font-size:.95em}
+
     .preset-buttons{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
     .preset-btn{background:#fff;border:2px solid #e9ecef;padding:10px;border-radius:10px;cursor:pointer;transition:.3s;text-align:center;font-size:.9em}
     .preset-btn:hover{background:#00A8E9;color:#fff;border-color:#00A8E9;transform:translateY(-2px);box-shadow:0 4px 8px rgba(0,168,233,.3)}
@@ -145,7 +157,7 @@
     gap:6px;
     z-index:4;
     pointer-events:none;
-align-items:flex-end; /* pour qu’ils reposent bien sur le sol */
+align-items:flex-end; /* pour qu'ils reposent bien sur le sol */
 }
     .grave{font-size:1.6em;opacity:0;transform:translateY(10px) scale(.9)}
     @keyframes gravePop{to{opacity:1;transform:translateY(0) scale(1)}}
@@ -163,7 +175,7 @@ align-items:flex-end; /* pour qu’ils reposent bien sur le sol */
     .speech-bubble.show{opacity:1;animation:bubble .3s ease-out}
     @keyframes bubble{0%{transform:translateX(-50%) scale(0)}50%{transform:translateX(-50%) scale(1.1)}100%{transform:translateX(-50%) scale(1)}}
 
-    .reference-item{position:absolute;right:60px;display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.9);padding:5px 10px;border-radius:8px;font-size:.8em;border:2px solid #e9ecef;z-index:4}
+    .reference-item{position:absolute;right:60px;display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.5);padding:5px 10px;border-radius:8px;font-size:.8em;border:2px solid rgba(233,236,239,.5);z-index:4;opacity:.6;transition:.3s}
     .reference-icon{font-size:1.3em}
     .reference-label{font-weight:600;color:#495057}
 
@@ -216,6 +228,16 @@ align-items:flex-end; /* pour qu’ils reposent bien sur le sol */
       100%{background:dodgerblue;box-shadow:0 0 10px rgba(30,144,255,.9)}
     }
     @keyframes driveLeft{from{left:110%}to{left:-20%}}
+    @keyframes bandageFloat{
+      0%{opacity:0;transform:translateX(-50%) scale(0)}
+      50%{opacity:1;transform:translateX(-50%) scale(1.2)}
+      100%{opacity:0;transform:translateX(-50%) translateY(-30px) scale(1)}
+    }
+    @keyframes reaperAppear{
+      0%{opacity:0;transform:translateX(-50%) scale(0) rotateZ(-45deg)}
+      50%{opacity:1;transform:translateX(-50%) scale(1) rotateZ(0deg)}
+      100%{opacity:1;transform:translateX(-50%) scale(1) rotateZ(0deg)}
+    }
 
     /* FATALITY overlay */
     #fatalOverlay{
@@ -301,6 +323,9 @@ align-items:flex-end; /* pour qu’ils reposent bien sur le sol */
       .indicator-icon{font-size:1.5em}
       .indicator-text{font-size:1em}
       .indicator-energy{font-size:.85em}
+      .left-column{position:relative;z-index:15}
+      .controls{position:relative;z-index:15}
+      input[type=range]{position:relative;z-index:16}
     }
     @media (max-width:480px){
       .header h1{font-size:1.2em}
@@ -318,8 +343,8 @@ align-items:flex-end; /* pour qu’ils reposent bien sur le sol */
   <!-- Mobile Navigation -->
   <div class="mobile-nav">
     <div class="header-logos-mobile">
-      ./logo_cou.png
-      ./logo_drop.png
+      <img src="./logo_cou.png" alt="Courseulles Logo" class="header-logo-mobile">
+      <img src="./logo_drop.png" alt="Drop Logo" class="header-logo-mobile">
     </div>
     <div class="nav-title">📦 Falling Object Impact Simulator</div>
     <div class="nav-buttons">
@@ -334,13 +359,13 @@ align-items:flex-end; /* pour qu’ils reposent bien sur le sol */
     <!-- Header -->
     <div class="header">
       <div class="header-top">
-        ./logo_cou.png
+        <img src="./logo_cou.png" alt="Courseulles Logo" class="header-logo">
         <div class="header-content">
           <h1>📦 Falling Object Impact Simulator</h1>
           <p>Understand the impact of falling objects <span class="lightning-easter-egg" id="lightningEgg" title="Click for a surprise!">⚡</span></p>
           <div class="header-description">Explore the dangers of falling objects in professional environments</div>
         </div>
-        ./logo_drop.png
+        <img src="./logo_drop.png" alt="Drop Logo" class="header-logo">
       </div>
     </div>
 
@@ -369,12 +394,15 @@ align-items:flex-end; /* pour qu’ils reposent bien sur le sol */
             </div>
 
             <div class="custom-weight-group">
-              <label>⭐ Custom Weight</label>
-              <div class="custom-weight-input">
-                <input type="number" id="customWeightInput" min="0.01" max="100" step="0.01" placeholder="1.0">
-                <span class="custom-weight-unit">kg</span>
+              <label class="custom-weight-label">⭐ Custom Weight</label>
+              <div class="custom-weight-controls">
+                <button class="weight-btn" onclick="decreaseWeight()">−</button>
+                <div class="custom-weight-input">
+                  <input type="number" id="customWeightInput" min="0.01" max="100" step="0.01" placeholder="1.0" value="1.0">
+                  <span class="custom-weight-unit">kg</span>
+                </div>
+                <button class="weight-btn" onclick="increaseWeight()">+</button>
               </div>
-              <div class="custom-icon">⚫</div>
             </div>
 
             <button class="simulate-btn" onclick="simulateFall()">🎬 Run Simulation</button>
@@ -387,13 +415,13 @@ align-items:flex-end; /* pour qu’ils reposent bien sur le sol */
           <div class="stats-display-mobile">
             <div class="stat-row total"><span class="stat-label">🎯 Total:</span><span class="stat-value" id="totalSimulationsMobile">0</span></div>
             <div class="stat-row safe"><span class="stat-label">✅ Safe:</span><span class="stat-value" id="safeSimulationsMobile">0</span></div>
-            <div class="stat-row lives"><span class="stat-label">🛡️ Lives:</span><span class="stat-value" id="preventedDeathsMobile">0</span></div>
+            <div class="stat-row lives"><span class="stat-label">💀 Deaths:</span><span class="stat-value" id="preventedDeathsMobile">0</span></div>
             <div class="stat-row injuries"><span class="stat-label">🏥 Injuries:</span><span class="stat-value" id="preventedInjuriesMobile">0</span></div>
           </div>
 
           <div id="visualization">
             <!-- FATALITY overlay -->
-            <div id="fatalOverlay">FATALITY</div>
+            <div id="fatalOverlay">You Killed Him 😱 !</div>
 
             <!-- Sea layer -->
             <div class="sea" aria-hidden="true"></div>
@@ -404,8 +432,8 @@ align-items:flex-end; /* pour qu’ils reposent bien sur le sol */
             <div class="stats-display">
               <div class="stat-row total"><span class="stat-label">🎯 Total Simulations:</span><span class="stat-value" id="totalSimulations">0</span></div>
               <div class="stat-row safe"><span class="stat-label">✅ Safe Simulations:</span><span class="stat-value" id="safeSimulations">0</span></div>
-              <div class="stat-row lives"><span class="stat-label">🛡️ Lives Saved:</span><span class="stat-value" id="preventedDeaths">0</span></div>
-              <div class="stat-row injuries"><span class="stat-label">🏥 Injuries Prevented:</span><span class="stat-value" id="preventedInjuries">0</span></div>
+              <div class="stat-row lives"><span class="stat-label">💀 Deaths:</span><span class="stat-value" id="preventedDeaths">0</span></div>
+              <div class="stat-row injuries"><span class="stat-label">🏥 Injuries:</span><span class="stat-value" id="preventedInjuries">0</span></div>
             </div>
 
             <!-- Integrated indicator -->
@@ -717,6 +745,23 @@ align-items:flex-end; /* pour qu’ils reposent bien sur le sol */
       if(v && v>0){currentWeight=v;fallingObject.textContent='⚫';updateDisplay();}
     });
 
+    function increaseWeight(){
+      let v = parseFloat(customWeightInput.value) || 1;
+      v = Math.min(100, v + 0.1);
+      customWeightInput.value = v.toFixed(2);
+      currentWeight = v;
+      fallingObject.textContent='⚫';
+      updateDisplay();
+    }
+    function decreaseWeight(){
+      let v = parseFloat(customWeightInput.value) || 1;
+      v = Math.max(0.01, v - 0.1);
+      customWeightInput.value = v.toFixed(2);
+      currentWeight = v;
+      fallingObject.textContent='⚫';
+      updateDisplay();
+    }
+
     // Easter egg
     let clickCount=0;
     document.getElementById('lightningEgg').addEventListener('click',()=>{
@@ -789,6 +834,41 @@ align-items:flex-end; /* pour qu’ils reposent bien sur le sol */
       visualization.appendChild(amb);
       amb.addEventListener('animationend',()=>amb.remove());
       setTimeout(()=>amb.remove(),12000);
+    }
+    function spawnBandage(){
+      const bandage=document.createElement('div');
+      bandage.className='event';
+      bandage.style.left = '50%';
+      bandage.style.bottom = 'calc(var(--ground-h) + 40px)';
+      bandage.style.transform = 'translateX(-50%)';
+      bandage.style.fontSize = '2em';
+      bandage.textContent = '🩹';
+      bandage.style.animation = 'bandageFloat 1.5s ease-out forwards';
+      visualization.appendChild(bandage);
+      setTimeout(()=>bandage.remove(),2000);
+    }
+    function spawnFirefighters(){
+      const ff=document.createElement('div');
+      ff.className='event';
+      ff.style.bottom = 'calc(var(--ground-h) - 15px)';
+      ff.style.animation = `driveLeft ${rand(5,7)}s linear forwards`;
+      ff.style.left = '110%';
+      ff.innerHTML = `<span style="font-size:2.2em">🚒</span>`;
+      visualization.appendChild(ff);
+      ff.addEventListener('animationend',()=>ff.remove());
+      setTimeout(()=>ff.remove(),10000);
+    }
+    function spawnReaper(){
+      const reaper=document.createElement('div');
+      reaper.className='event';
+      reaper.style.left = '50%';
+      reaper.style.bottom = 'calc(var(--ground-h) + 60px)';
+      reaper.style.transform = 'translateX(-50%)';
+      reaper.style.fontSize = '2.5em';
+      reaper.textContent = '⚰️';
+      reaper.style.animation = 'reaperAppear 1s ease-out forwards';
+      visualization.appendChild(reaper);
+      setTimeout(()=>reaper.remove(),3000);
     }
     function spawnRandomEvent(){
       const r=Math.random();
@@ -879,8 +959,13 @@ align-items:flex-end; /* pour qu’ils reposent bien sur le sol */
 
           if(damageLevel==='fatality'){
             addGrave(true);     // ⚰️ dans le sol (droite)
-            spawnAmbulance();   // ambulance immédiate vers la gauche
-            showFatality();     // overlay "FATALITY" + vignette
+            spawnAmbulance();   // ambulance
+            spawnReaper();      // faucheuse ⚰️
+            showFatality();     // overlay "You Killed Him 😱 !" + vignette
+          }else if(damageLevel==='major'){
+            spawnFirefighters();  // pompiers 🚒
+          }else if(damageLevel==='minor' || damageLevel==='slight'){
+            spawnBandage();  // pansement 🩹
           }
 
           setTimeout(()=>{
