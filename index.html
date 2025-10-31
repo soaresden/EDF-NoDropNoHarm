@@ -162,6 +162,28 @@ align-items:flex-end; /* pour qu'ils reposent bien sur le sol */
     .grave{font-size:1.6em;opacity:0;transform:translateY(10px) scale(.9)}
     @keyframes gravePop{to{opacity:1;transform:translateY(0) scale(1)}}
 
+    /* Death Counts label */
+    #deathCountsLabel{
+      position:absolute;
+      right:10px;
+      bottom:calc(var(--ground-h) - 35px);
+      font-weight:900;
+      font-size:1.1em;
+      color:#888;
+      letter-spacing:2px;
+      z-index:5;
+      opacity:0;
+      transition:opacity .3s;
+      filter:drop-shadow(0 0 15px rgba(0,0,0,0.5)) drop-shadow(0 0 8px rgba(0,0,0,0.4));
+      text-shadow:
+        0 0 20px rgba(0,0,0,0.6),
+        0 0 40px rgba(0,0,0,0.4),
+        0 0 60px rgba(0,0,0,0.3),
+        2px 2px 4px rgba(0,0,0,0.8);
+    }
+    #deathCountsLabel.show{opacity:1}
+
+
     .person{font-size:3em;z-index:6;position:absolute;bottom:calc(var(--ground-h) - 20px);left:50%;transform:translateX(-50%);filter:drop-shadow(2px 2px 4px rgba(0,0,0,.3))}
     .impact-effect{position:absolute;bottom:calc(var(--ground-h) + 40px);left:50%;transform:translateX(-50%);font-size:4em;z-index:7;opacity:0;transition:opacity .3s}
     .impact-effect.show{opacity:1;animation:impact .5s ease-out}
@@ -312,17 +334,20 @@ align-items:flex-end; /* pour qu'ils reposent bien sur le sol */
       .header h1{font-size:1.5em}
       .header p{font-size:.9em}
       .header-description{font-size:.85em}
+      .main-grid{padding:10px;gap:20px}
+      .top-section{display:grid;grid-template-columns:1fr;gap:30px}
+      .left-column{width:100%;margin-top:30px}
+      .visualization-container{height:240px;padding:10px;width:100%}
       .visualization-container .stats-display{display:none!important}
       .stats-display-mobile{display:block!important}
-      .main-grid{padding:15px;gap:15px}
       .preset-buttons{grid-template-columns:repeat(2,1fr);gap:8px}
-      .visualization-container{height:400px;padding:10px}
       .falling-object{font-size:2em}
       .person{font-size:2.5em}
       .integrated-indicator{padding:8px 15px;font-size:.9em}
       .indicator-icon{font-size:1.5em}
       .indicator-text{font-size:1em}
       .indicator-energy{font-size:.85em}
+      .bottom-tables{grid-template-columns:1fr;gap:15px}
       .left-column{position:relative;z-index:15}
       .controls{position:relative;z-index:15}
       input[type=range]{position:relative;z-index:16}
@@ -454,6 +479,9 @@ align-items:flex-end; /* pour qu'ils reposent bien sur le sol */
 
             <!-- Ground -->
             <div class="ground">
+              <!-- Death Counts Label -->
+              <div id="deathCountsLabel">DEATH COUNTS</div>
+
               <!-- Graveyard in soil -->
               <div id="graveyardGround" aria-live="polite"></div>
 
@@ -901,6 +929,14 @@ align-items:flex-end; /* pour qu'ils reposent bien sur le sol */
       }
       updateStatsDisplay();
       saveStats();
+      
+      // Mettre à jour le label Death Counts
+      const label = document.getElementById('deathCountsLabel');
+      if(safetyStats.preventedDeaths > 0){
+        label.classList.add('show');
+      }else{
+        label.classList.remove('show');
+      }
     }
 
     // Simulation
@@ -973,7 +1009,7 @@ align-items:flex-end; /* pour qu'ils reposent bien sur le sol */
             speechBubble.classList.remove('show');
           },2500);
         }, fallTime*1000);
-      },100);
+      },2000);
     }
 
     // Mobile nav
@@ -1002,6 +1038,12 @@ align-items:flex-end; /* pour qu'ils reposent bien sur le sol */
     updateHeightScale();
     updateDisplay();
     renderGraveyard();
+    
+    // Initialiser le label Death Counts
+    const label = document.getElementById('deathCountsLabel');
+    if(safetyStats.preventedDeaths > 0){
+      label.classList.add('show');
+    }
 
     // Events clock (every 20s) + one immediately
     spawnRandomEvent();
